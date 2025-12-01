@@ -25,7 +25,10 @@ export default function App() {
   // }
 
   if (!hasJoined) {
-    return <JoinCartel onJoin={() => setHasJoined(true)} />;
+    return <JoinCartel onJoin={(inviteCode) => {
+      console.log("Joining with invite:", inviteCode);
+      setHasJoined(true);
+    }} />;
   }
 
   return (

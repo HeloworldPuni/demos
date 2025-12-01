@@ -9,7 +9,7 @@ export const CARTEL_POT_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const CARTEL_SHARES_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 // Fee constants (in USDC, 6 decimals)
-export const JOIN_FEE = BigInt(10000); // 0.01 USDC
+export const JOIN_FEE = BigInt(0); // FREE for Phase 1 (invite-only)
 export const RAID_FEE = BigInt(5000);  // 0.005 USDC
 
 // Paymaster config

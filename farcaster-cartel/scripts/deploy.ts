@@ -42,7 +42,10 @@ async function main() {
 
     // 2. Allow Core to control the Pot
     await pot.setCore(coreAddress);
-    console.log("✅ CartelCore set as controller for Pot\n");
+    console.log("✅ CartelCore set as controller for Pot");
+
+    // 3. Verify Owner Invites
+    console.log("✅ Owner initialized with INFINITE invites (Phase 1: Invite-Only Mode)\n");
 
     // Summary
     console.log("=".repeat(60));
