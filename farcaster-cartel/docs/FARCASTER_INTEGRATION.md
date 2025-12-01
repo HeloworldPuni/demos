@@ -29,7 +29,7 @@ const verifyResult = await appClient.verifySignInMessage({
 **Tokens Exchanged**:
 ```json
 {
-  "message": "Sign in to Farcaster Cartel\n\nNonce: abc123def456...",
+  "message": "Sign in to Base Cartel\n\nNonce: abc123def456...",
   "signature": "0x1234567890abcdef...",
   "fid": 3621,
   "username": "kingpin",
@@ -114,7 +114,7 @@ const verifyResult = await appClient.verifySignInMessage({
 ```
 
 **How Invoked**:
-1. User shares Farcaster Cartel app link in feed
+1. User shares Base Cartel app link in feed
 2. Link automatically renders as Frame
 3. User sees "Join the Cartel" button in their feed
 4. Click triggers `/api/frames/join/action`
@@ -247,7 +247,7 @@ Body:
     "author": {
       "fid": 12345,
       "username": "cartelbot",
-      "display_name": "Farcaster Cartel",
+      "display_name": "Base Cartel",
       "pfp_url": "https://...",
       "verified_addresses": {}
     },
@@ -405,7 +405,7 @@ NEXT_PUBLIC_URL=https://yourapp.com
 3. **Test Cast**:
    ```typescript
    await neynarService.postCast({
-     text: "Test cast from Farcaster Cartel!",
+     text: "Test cast from Base Cartel!",
      embeds: [{ url: "https://yourapp.com" }]
    });
    ```
@@ -434,3 +434,4 @@ contract.on('Raid', async (raider, target, amountStolen, success) => {
   }
 });
 ```
+

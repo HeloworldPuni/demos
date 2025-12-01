@@ -22,14 +22,22 @@ class NeynarService {
     private signerUuid: string;
 
     constructor() {
-        if (!NEYNAR_API_KEY || !SIGNER_UUID) {
-            throw new Error('Neynar API credentials not configured');
+        if (!NEYNAR_API_KEY) {
+            console.warn('[Neynar] API Key not configured. Notifications will be disabled.');
         }
-        this.apiKey = NEYNAR_API_KEY;
-        this.signerUuid = SIGNER_UUID;
+        if (!SIGNER_UUID) {
+            console.warn('[Neynar] Signer UUID not configured. Notifications will be disabled.');
+        }
+        this.apiKey = NEYNAR_API_KEY || '';
+        this.signerUuid = SIGNER_UUID || '';
     }
 
     async postCast(params: CastParams): Promise<any> {
+        if (!this.apiKey || !this.signerUuid) {
+            console.log('[Neynar] Skipping cast (credentials missing):', params.text);
+            return { success: false, skipped: true };
+        }
+
         try {
             const response = await fetch(`${NEYNAR_API_URL}/cast`, {
                 method: 'POST',
@@ -54,7 +62,8 @@ class NeynarService {
             return data;
         } catch (error) {
             console.error('[Neynar] Failed to post cast:', error);
-            throw error;
+            // Don't throw, just log error to prevent app crash
+            return { success: false, error };
         }
     }
 
@@ -96,7 +105,7 @@ class NeynarService {
     async postWelcomeEvent(playerAddress: string, referrer?: string) {
         const castText = referrer
             ? `🤝 New recruit!\n\n${playerAddress} just joined the cartel (referred by ${referrer}).\n\nWelcome to the family. 🎩\n\n#FarcasterCartel`
-            : `🎩 ${playerAddress} just joined the Farcaster Cartel!\n\nWelcome to the most ruthless syndicate on Base. 💼\n\n#FarcasterCartel`;
+            : `🎩 ${playerAddress} just joined the Base Cartel!\n\nWelcome to the most ruthless syndicate on Base. 💼\n\n#FarcasterCartel`;
 
         return this.postCast({
             text: castText,
@@ -133,3 +142,4 @@ contract.on('Betrayal', async (traitor, amountStolen) => {
 // When Season starts/ends
 await neynarService.postSeasonEvent(2, 'start');
 */
+

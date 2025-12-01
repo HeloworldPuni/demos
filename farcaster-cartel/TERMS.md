@@ -1,20 +1,5 @@
 # Terms of Service
 
-**Last Updated**: November 20, 2025
-
-## 1. Acceptance of Terms
-
-By accessing or using Farcaster Cartel (the "App"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the App.
-
-## 2. Description of Service
-
-Farcaster Cartel is a decentralized blockchain-based game where users can:
-- Join a virtual cartel by staking USDC tokens
-- Earn yield on their stake
-- Raid other players to steal shares
-- Betray the cartel to cash out
-- Compete on seasonal leaderboards for NFT rewards
-
 ## 3. Eligibility
 
 You must:
@@ -59,7 +44,7 @@ Users must not:
 ## 6. Risks and Disclaimers
 
 ### 6.1 Financial Risk
-**WARNING**: Participating in Farcaster Cartel involves financial risk. You may lose all staked funds. Only participate with funds you can afford to lose.
+**WARNING**: Participating in Base Cartel involves financial risk. You may lose all staked funds. Only participate with funds you can afford to lose.
 
 ### 6.2 Smart Contract Risk
 The App uses smart contracts that have been audited but may still contain bugs or vulnerabilities. Use at your own risk.
@@ -115,7 +100,7 @@ Smart contract stakes and balances remain on the blockchain. Termination does no
 
 ## 11. Indemnification
 
-You agree to indemnify and hold harmless Farcaster Cartel, its developers, and affiliates from any claims, damages, or expenses arising from your use of the App or violation of these Terms.
+You agree to indemnify and hold harmless Base Cartel, its developers, and affiliates from any claims, damages, or expenses arising from your use of the App or violation of these Terms.
 
 ## 12. Limitation of Liability
 
@@ -151,7 +136,7 @@ If any provision is found unenforceable, the remaining provisions remain in effe
 
 ## 16. No Agency
 
-No agency, partnership, joint venture, or employment relationship is created between you and Farcaster Cartel.
+No agency, partnership, joint venture, or employment relationship is created between you and Base Cartel.
 
 ## 17. Force Majeure
 
@@ -159,7 +144,7 @@ We are not liable for failures due to circumstances beyond our control (e.g., bl
 
 ## 18. Entire Agreement
 
-These Terms, together with the Privacy Policy, constitute the entire agreement between you and Farcaster Cartel.
+These Terms, together with the Privacy Policy, constitute the entire agreement between you and Base Cartel.
 
 ## 19. Contact Information
 
@@ -179,4 +164,5 @@ For questions about these Terms, contact us at:
 - 📜 Blockchain transactions are final
 - 🎮 Play fair, have fun, trust no one
 
-**By using Farcaster Cartel, you acknowledge you have read, understood, and agree to these Terms of Service.**
+**By using Base Cartel, you acknowledge you have read, understood, and agree to these Terms of Service.**
+

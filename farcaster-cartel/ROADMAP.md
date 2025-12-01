@@ -1,4 +1,4 @@
-# Farcaster Cartel - Roadmap
+# Base Cartel - Roadmap
 
 ## ✅ Phase 1: MVP (COMPLETE)
 
@@ -78,6 +78,13 @@
 - [ ] Lending protocol (loan shares to others)
 - [ ] Insurance against raids
 - [ ] Dynamic fee adjustments based on activity
+
+### 🤖 Auto-Agent System (New!)
+- [ ] AgentVault smart contract (Escrow + Policy)
+- [ ] Auto-Agent UI (Toggle, Strategy, Budget)
+- [ ] Backend Agent Service (Cron jobs, Heuristics)
+- [ ] Notification System (Farcaster DMs/Casts)
+- [ ] P&L Accounting & Audit Log
 
 ### Gamification
 - [ ] Daily quests and challenges
@@ -247,3 +254,4 @@ Every feature undergoes:
 **Last Updated**: November 20, 2025
 **Current Version**: 1.0.0 (MVP Complete)
 **Next Release**: 1.1.0 (Alliance System) - ETA: 2-4 weeks
+

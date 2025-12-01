@@ -3,19 +3,11 @@ pragma solidity ^0.8.20;
 
 import "./CartelShares.sol";
 import "./CartelPot.sol";
+import "./IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract CartelCore is Ownable, ReentrancyGuard {
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
-
-import "./CartelShares.sol";
-import "./CartelPot.sol";
-import "./IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-
-contract CartelCore is Ownable {
     CartelShares public sharesContract;
     CartelPot public pot;
     IERC20 public immutable usdc;
@@ -33,8 +25,15 @@ contract CartelCore is Ownable {
     uint256 public constant REFERRAL_BONUS = 20;
 
     // Fees (USDC, 6 decimals)
-    uint256 public constant JOIN_FEE = 10000; // 0.01 USDC
-    uint256 public constant RAID_FEE = 5000;  // 0.005 USDC
+    uint256 public JOIN_FEE = 10000; // 0.01 USDC
+    uint256 public RAID_FEE = 5000;  // 0.005 USDC
+
+    // Auto-Agent
+    mapping(address => bool) public authorizedAgents;
+
+    event Join(address indexed player, address indexed referrer, uint256 shares, uint256 fee);
+    event Raid(address indexed raider, address indexed target, uint256 amountStolen, bool success, uint256 fee);
+    event Betrayal(address indexed traitor, uint256 amountStolen);
 
     constructor(address _shares, address _pot, address _usdc) Ownable(msg.sender) {
         sharesContract = CartelShares(_shares);
@@ -42,13 +41,24 @@ contract CartelCore is Ownable {
         usdc = IERC20(_usdc);
     }
 
-    event Join(address indexed player, address indexed referrer, uint256 shares, uint256 fee);
-    event Raid(address indexed raider, address indexed target, uint256 amountStolen, bool success, uint256 fee);
+    modifier onlyAgent() {
+        require(authorizedAgents[msg.sender], "Not authorized agent");
+        _;
+    }
+
+    function setAgent(address agent, bool status) external onlyOwner {
+        authorizedAgents[agent] = status;
+    }
+
+    function setFees(uint256 _joinFee, uint256 _raidFee) external onlyOwner {
+        JOIN_FEE = _joinFee;
+        RAID_FEE = _raidFee;
+    }
 
     function join(address referrer) external nonReentrant {
         require(sharesContract.balanceOf(msg.sender, 1) == 0, "Already joined");
         // Collect join fee
-        require(usdc.transferFrom(msg.sender, address(pot), JOIN_FEE), "Fee payment failed");
+        // usdc.transferFrom handled by pot.depositFrom
         pot.depositFrom(msg.sender, JOIN_FEE);
         
         // Mint initial shares to the user
@@ -71,23 +81,36 @@ contract CartelCore is Ownable {
     }
 
     function claimYield() external nonReentrant {
-        // Check eligibility and transfer USDC from pot to user
+        _claimYield(msg.sender);
+    }
+
+    function claimYieldFor(address user) external nonReentrant onlyAgent {
+        _claimYield(user);
+    }
+
+    function _claimYield(address user) internal {
         // Placeholder logic
     }
 
     function raid(address target) external nonReentrant {
-        // Collect raid fee
-        require(usdc.transferFrom(msg.sender, address(pot), RAID_FEE), "Fee payment failed");
+        _raid(msg.sender, target);
+    }
+
+    function raidFor(address user, address target) external nonReentrant onlyAgent {
+        _raid(user, target);
+    }
+
+    function _raid(address raider, address target) internal {
+        // Collect raid fee from msg.sender (User or AgentVault)
+        // usdc.transferFrom handled by pot.depositFrom
         pot.depositFrom(msg.sender, RAID_FEE);
         
         // Steal shares logic (placeholder)
         bool success = true;
         uint256 stolen = 0;
         
-        emit Raid(msg.sender, target, stolen, success, RAID_FEE);
+        emit Raid(raider, target, stolen, success, RAID_FEE);
     }
-
-    event Betrayal(address indexed traitor, uint256 amountStolen);
 
     function betray() external nonReentrant {
         // 1. Burn all shares

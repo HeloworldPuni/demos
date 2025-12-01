@@ -159,8 +159,8 @@ class ZoraMinter {
         const tier = this.getRankTier(recipient.rank);
 
         return {
-            name: `Farcaster Cartel - Season ${seasonNumber} - Rank #${recipient.rank}`,
-            description: `This badge certifies that the holder achieved Rank #${recipient.rank} in Farcaster Cartel Season ${seasonNumber}. ${tier.description}`,
+            name: `Base Cartel - Season ${seasonNumber} - Rank #${recipient.rank}`,
+            description: `This badge certifies that the holder achieved Rank #${recipient.rank} in Base Cartel Season ${seasonNumber}. ${tier.description}`,
             image: `${process.env.NEXT_PUBLIC_URL}/api/metadata/season/${seasonNumber}/badge/${recipient.rank}.png`,
             attributes: [
                 { trait_type: 'Season', value: seasonNumber },
@@ -267,3 +267,4 @@ if (require.main === module) {
 }
 
 export default ZoraMinter;
+

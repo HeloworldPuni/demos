@@ -42,7 +42,7 @@ export async function GET() {
       ],
       "canonicalDomain": "http://localhost:3000",
       "noindex": false,
-      "tags": ["base", "baseapp", "miniapp", "game", "strategy", "farcaster-cartel"]
+      "tags": ["base", "baseapp", "miniapp", "game", "strategy", "base-cartel"]
     },
     "baseBuilder": {
       "allowedAddresses": ["0x8342A48694A74044116F330db5050a267b28dD85"],

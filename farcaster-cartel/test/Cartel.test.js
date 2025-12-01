@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("Farcaster Cartel", function () {
+describe("Base Cartel", function () {
     let Core, Pot, Shares, MockUSDC;
     let core, pot, shares, usdc;
     let owner, addr1, addr2;
@@ -74,3 +74,4 @@ describe("Farcaster Cartel", function () {
             .withArgs(addr1.address, 0);
     });
 });
+

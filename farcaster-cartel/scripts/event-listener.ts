@@ -1,5 +1,5 @@
 /**
- * Event Listener Service for Farcaster Cartel
+ * Event Listener Service for Base Cartel
  * 
  * This service listens to blockchain events from CartelCore contract
  * and persists player data to maintain leaderboard state.
@@ -160,3 +160,4 @@ if (require.main === module) {
 }
 
 export default EventListener;
+

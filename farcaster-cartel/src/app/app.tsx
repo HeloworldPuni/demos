@@ -1,6 +1,6 @@
 "use client";
 
-import { useMiniKit } from '@coinbase/onchainkit/minikit';
+// import { useMiniKit } from '@coinbase/onchainkit/minikit';
 import { useEffect, useState } from 'react';
 
 import JoinCartel from "~/components/JoinCartel";
@@ -9,25 +9,20 @@ import Leaderboard from "~/components/Leaderboard";
 import { Button } from "~/components/ui/button";
 
 export default function App() {
-  const { isFrameReady, setFrameReady } = useMiniKit();
+  // const { isFrameReady, setFrameReady } = useMiniKit();
   const [hasJoined, setHasJoined] = useState(false);
   const [currentView, setCurrentView] = useState<"dashboard" | "leaderboard">("dashboard");
 
   // Initialize the miniapp
-  useEffect(() => {
-    if (!isFrameReady) {
-      setFrameReady();
-    }
-  }, [setFrameReady, isFrameReady]);
+  // useEffect(() => {
+  //   if (!isFrameReady) {
+  //     setFrameReady();
+  //   }
+  // }, [setFrameReady, isFrameReady]);
 
-  // const { data: authData, isLoading: isAuthLoading, error: authError } = useQuickAuth<AuthResponse>(
-  //   "/api/auth",
-  //   { method: "GET" }
-  // );
-
-  if (!isFrameReady) {
-    return <div className="flex items-center justify-center min-h-screen bg-black text-white">Loading...</div>;
-  }
+  // if (!isFrameReady) {
+  //   return <div className="flex items-center justify-center min-h-screen bg-black text-white">Loading...</div>;
+  // }
 
   if (!hasJoined) {
     return <JoinCartel onJoin={() => setHasJoined(true)} />;

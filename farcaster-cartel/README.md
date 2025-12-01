@@ -1,10 +1,3 @@
-# Farcaster Cartel
-
-An onchain social strategy game on Base. Join the cartel, raid rivals, betray the syndicate, and earn yield.
-
-[![CI/CD](https://github.com/your-org/farcaster-cartel/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/farcaster-cartel/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
 ## 🎮 Live Demo
 
 **Production**: https://farcaster-cartel.vercel.app

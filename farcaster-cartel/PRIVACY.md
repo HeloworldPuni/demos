@@ -1,12 +1,3 @@
-# Privacy Policy
-
-**Last Updated**: November 20, 2025
-
-## Introduction
-
-Welcome to Farcaster Cartel ("we," "our," or "us"). This Privacy Policy explains how we collect, use, and protect your information when you use our decentralized application (the "App").
-
-## Information We Collect
 
 ### Wallet Information
 - **Ethereum Addresses**: We collect your wallet address when you connect your wallet to use the App.
@@ -101,4 +92,5 @@ If you have questions about this Privacy Policy, please contact us at:
 
 ## Your Consent
 
-By using Farcaster Cartel, you acknowledge that you have read and understood this Privacy Policy and agree to its terms.
+By using Base Cartel, you acknowledge that you have read and understood this Privacy Policy and agree to its terms.
+

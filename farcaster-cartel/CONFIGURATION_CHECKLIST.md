@@ -1,9 +1,3 @@
-# Configuration Checklist - Values to Update
-
-**Before deploying, replace all demo/placeholder values with your actual values.**
-
----
-
 ## 🔴 CRITICAL - Must Change Before Deploy
 
 ### 1. Farcaster Manifest (`.well-known/farcaster.json`)
@@ -132,7 +126,7 @@ import { CARTEL_CORE_ADDRESS, CARTEL_POT_ADDRESS, CARTEL_SHARES_ADDRESS } from '
 ### 8. App Metadata
 **File**: `src/lib/utils.ts`
 
-**Lines 4-11** - Already updated with Farcaster Cartel branding ✅
+**Lines 4-11** - Already updated with Base Cartel branding ✅
 
 ### 9. Mock Data (Remove in Production)
 **Files with mock data**:
@@ -221,3 +215,4 @@ Before deploying to production:
 ---
 
 **After updating all values, test thoroughly on testnet before mainnet deploy!**
+

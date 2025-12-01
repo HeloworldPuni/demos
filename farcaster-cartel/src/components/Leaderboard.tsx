@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useViewProfile } from "@coinbase/onchainkit/minikit";
+// import { useViewProfile } from "@coinbase/onchainkit/minikit";
 import { haptics } from "@/lib/haptics";
 
 interface Player {
@@ -21,12 +21,13 @@ const MOCK_LEADERBOARD: Player[] = [
 ];
 
 export default function Leaderboard() {
-    const viewProfile = useViewProfile();
+    // const viewProfile = useViewProfile();
 
     const handleViewProfile = async (fid?: number) => {
         if (fid) {
             await haptics.light();
-            viewProfile(fid);
+            console.log("View profile:", fid);
+            // viewProfile({ fid });
         }
     };
 

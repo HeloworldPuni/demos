@@ -41,8 +41,8 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
 
     const handleShare = () => {
         const text = result === 'success'
-            ? `I just raided ${targetName} and stole ${stolenAmount} shares in Farcaster Cartel! 🏴‍☠️`
-            : `I tried to raid ${targetName} in Farcaster Cartel but got fought off! 🛡️`;
+            ? `I just raided ${targetName} and stole ${stolenAmount} shares in Base Cartel! 🏴‍☠️`
+            : `I tried to raid ${targetName} in Base Cartel but got fought off! 🛡️`;
 
         sdk.actions.composeCast({
             text: text,
@@ -132,3 +132,4 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
         </div>
     );
 }
+

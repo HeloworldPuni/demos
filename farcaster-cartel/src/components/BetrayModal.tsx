@@ -28,7 +28,7 @@ export default function BetrayModal({ isOpen, onClose }: BetrayModalProps) {
 
     const handleShare = () => {
         composeCast({
-            text: `I just BETRAYED the Farcaster Cartel and ran away with ${payout} USDC! 🏃💨\n\nTrust no one.`,
+            text: `I just BETRAYED the Base Cartel and ran away with ${payout} USDC! 🏃💨\n\nTrust no one.`,
             embeds: []
         });
         onClose();

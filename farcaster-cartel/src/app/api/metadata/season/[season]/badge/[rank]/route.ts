@@ -12,8 +12,8 @@ export async function GET(
     const tier = getTier(rankNum);
 
     const metadata = {
-        name: `Farcaster Cartel - Season ${seasonNum} - Rank #${rankNum}`,
-        description: `This badge certifies that the holder achieved Rank #${rankNum} in Farcaster Cartel Season ${seasonNum}. ${tier.description}`,
+        name: `Base Cartel - Season ${seasonNum} - Rank #${rankNum}`,
+        description: `This badge certifies that the holder achieved Rank #${rankNum} in Base Cartel Season ${seasonNum}. ${tier.description}`,
         image: `${process.env.NEXT_PUBLIC_URL}/api/metadata/season/${seasonNum}/badge/${rankNum}.png`,
         external_url: `${process.env.NEXT_PUBLIC_URL}?season=${seasonNum}&rank=${rankNum}`,
         attributes: [

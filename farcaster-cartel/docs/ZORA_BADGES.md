@@ -24,8 +24,8 @@ npx tsx scripts/process-season-end.ts 1
 ### Sample Metadata
 ```json
 {
-  "name": "Farcaster Cartel - Season 1 - Rank #1",
-  "description": "This badge certifies that the holder achieved Rank #1 in Farcaster Cartel Season 1. The undisputed ruler of the cartel.",
+  "name": "Base Cartel - Season 1 - Rank #1",
+  "description": "This badge certifies that the holder achieved Rank #1 in Base Cartel Season 1. The undisputed ruler of the cartel.",
   "image": "https://yourapp.com/api/metadata/season/1/badge/1.png",
   "attributes": [
     { "trait_type": "Season", "value": 1 },
@@ -183,8 +183,8 @@ View collection: https://zora.co/collect/base:0x1234567890abcdef1234567890abcdef
 **Response**:
 ```json
 {
-  "name": "Farcaster Cartel - Season 1 - Rank #1",
-  "description": "This badge certifies that the holder achieved Rank #1 in Farcaster Cartel Season 1. The undisputed ruler of the cartel.",
+  "name": "Base Cartel - Season 1 - Rank #1",
+  "description": "This badge certifies that the holder achieved Rank #1 in Base Cartel Season 1. The undisputed ruler of the cartel.",
   "image": "https://yourapp.com/api/metadata/season/1/badge/1.png",
   "external_url": "https://yourapp.com?season=1&rank=1",
   "attributes": [
@@ -240,8 +240,8 @@ Cache-Control: public, max-age=31536000, immutable
 **Response**:
 ```json
 {
-  "name": "Farcaster Cartel - Season 1 Badges",
-  "description": "Official badges for top performers in Farcaster Cartel Season 1. Earn your place in the hierarchy.",
+  "name": "Base Cartel - Season 1 Badges",
+  "description": "Official badges for top performers in Base Cartel Season 1. Earn your place in the hierarchy.",
   "image": "https://yourapp.com/api/metadata/season/1/collection.png",
   "external_link": "https://yourapp.com",
   "seller_fee_basis_points": 250,
@@ -310,3 +310,4 @@ npx tsx scripts/process-season-end.ts 1
 ```bash
 curl https://yourapp.com/api/metadata/season/1/badge/1
 ```
+

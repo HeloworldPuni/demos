@@ -1,5 +1,7 @@
 "use client";
 
+import { OnchainKitProvider } from '@coinbase/onchainkit';
+import { base } from 'wagmi/chains';
 import WagmiProvider from "~/components/providers/WagmiProvider";
 import FrameProvider from "~/components/providers/FrameProvider";
 
@@ -9,8 +11,13 @@ export default function Providers({
   children: React.ReactNode;
 }) {
   return (
-    <FrameProvider>
-      <WagmiProvider>{children}</WagmiProvider>
-    </FrameProvider>
+    <OnchainKitProvider
+      chain={base}
+      apiKey={process.env.NEXT_PUBLIC_CDP_API_KEY}
+    >
+      <FrameProvider>
+        <WagmiProvider>{children}</WagmiProvider>
+      </FrameProvider>
+    </OnchainKitProvider>
   );
 }

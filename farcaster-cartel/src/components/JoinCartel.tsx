@@ -37,7 +37,7 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
             <Card className="w-full max-w-md bg-zinc-900 border-zinc-800">
                 <CardHeader>
                     <CardTitle className="text-center text-2xl text-red-500 font-black">
-                        FARCASTER CARTEL
+                        BASE CARTEL
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">

@@ -1,4 +1,4 @@
-# Farcaster Cartel - End-to-End Smoke Test
+# Base Cartel - End-to-End Smoke Test
 
 **Test Date**: November 20, 2025  
 **Test Environment**: Base Sepolia Testnet  
@@ -321,18 +321,6 @@ console.log("On-chain shares:", onChainShares.toString()); // 122
 console.log("API shares:", apiShares); // 122
 console.log("Match:", onChainShares.toString() === apiShares.toString()); // true ✓
 ```
-
-**UI Screenshot**: [Leaderboard showing user at rank #12 with 122 shares]
-
----
-
-## Test 7: Farcaster Auto-Post
-
-### Steps
-1. After raid success, check Farcaster for auto-post
-2. Verify cast content matches raid details
-3. Confirm embedded link works
-
 ### Expected Result
 ✅ **PASS**
 
@@ -466,3 +454,4 @@ The cartel grows stronger. 💪
 **Test Completed**: November 20, 2025, 11:15 AM IST  
 **Signed off by**: QA Lead  
 **Status**: **PRODUCTION READY** 🚀
+

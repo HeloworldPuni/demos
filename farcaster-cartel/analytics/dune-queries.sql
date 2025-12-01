@@ -1,4 +1,4 @@
--- Farcaster Cartel - Dune Analytics Queries
+-- Base Cartel - Dune Analytics Queries
 -- Deploy these queries to Dune Analytics for real-time blockchain monitoring
 
 -- =====================================================
@@ -205,3 +205,4 @@ FROM join_fees j
 FULL OUTER JOIN raid_fees r ON j.day = r.day
 WHERE COALESCE(j.day, r.day) >= NOW() - INTERVAL '30 days'
 ORDER BY day DESC;
+

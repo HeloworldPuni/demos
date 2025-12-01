@@ -7,6 +7,7 @@ import BadgesList from "./BadgesList";
 import BetrayModal from "./BetrayModal";
 import InviteModal from "./InviteModal";
 import { haptics } from "@/lib/haptics";
+import AutoAgentPanel from "@/components/agent/AutoAgentPanel";
 
 export default function CartelDashboard() {
     const [shares, setShares] = useState(100);
@@ -31,7 +32,7 @@ export default function CartelDashboard() {
     return (
         <div className="min-h-screen bg-black text-white p-4 space-y-6">
             <header className="flex justify-between items-center">
-                <h1 className="text-xl font-bold text-red-500">Farcaster Cartel</h1>
+                <h1 className="text-xl font-bold text-red-500">Base Cartel</h1>
                 <Badge variant="outline" className="border-red-500 text-red-500">Rank: Soldier</Badge>
             </header>
 
@@ -112,6 +113,11 @@ export default function CartelDashboard() {
                         Betray Cartel
                     </Button>
                 </div>
+            </div>
+
+            <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-zinc-200">Automation</h2>
+                <AutoAgentPanel />
             </div>
 
             <RaidModal

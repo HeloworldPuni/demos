@@ -32,7 +32,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
 
     const handleShare = () => {
         sdk.actions.composeCast({
-            text: `Join me in Farcaster Cartel! 🏴‍☠️\n\nEarn shares, raid rivals, and claim daily yield.\n\n${inviteLink}`,
+            text: `Join me in the Base Cartel! Use my invite code: ${inviteLink}\n\nEarn yield, raid rivals, and rule the chain. 🔴🔵`,
             embeds: [inviteLink]
         });
     };

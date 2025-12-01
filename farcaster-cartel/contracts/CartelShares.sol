@@ -7,15 +7,26 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract CartelShares is ERC1155, Ownable {
     uint256 public constant SHARE_ID = 1;
     
+    address public minter;
+
     constructor() ERC1155("https://api.farcastercartel.com/metadata/{id}.json") Ownable(msg.sender) {
         // Initial minting logic can go here or be controlled by CartelCore
     }
 
-    function mint(address account, uint256 amount, bytes memory data) public onlyOwner {
+    modifier onlyMinter() {
+        require(msg.sender == minter || msg.sender == owner(), "Not authorized to mint");
+        _;
+    }
+
+    function setMinter(address _minter) external onlyOwner {
+        minter = _minter;
+    }
+
+    function mint(address account, uint256 amount, bytes memory data) public onlyMinter {
         _mint(account, SHARE_ID, amount, data);
     }
 
-    function burn(address account, uint256 amount) public onlyOwner {
+    function burn(address account, uint256 amount) public onlyMinter {
         _burn(account, SHARE_ID, amount);
     }
 

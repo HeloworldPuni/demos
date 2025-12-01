@@ -95,7 +95,7 @@ NEXT_PUBLIC_CARTEL_SHARES_ADDRESS=0x...
   "accountAssociation": { ... },
   "frame": {
     "version": "1",
-    "name": "Farcaster Cartel",
+    "name": "Base Cartel",
     "homeUrl": "https://farcaster-cartel.vercel.app",
     "iconUrl": "https://i.imgur.com/brcnijg.png",
     "requiredCapabilities": [
@@ -301,3 +301,4 @@ git push origin hotfix/issue-123
 ---
 
 **All deployment infrastructure complete and production-ready!** 🚀
+

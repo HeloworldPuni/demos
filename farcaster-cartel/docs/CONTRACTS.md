@@ -1,6 +1,6 @@
 # Smart Contracts Documentation
 
-This document details the deployed smart contracts for the Farcaster Cartel application.
+This document details the deployed smart contracts for the Base Cartel application.
 
 ## 1. CartelCore.sol
 **Role**: Main game logic controller. Manages user interactions, raids, and referrals.
@@ -64,3 +64,4 @@ This document details the deployed smart contracts for the Farcaster Cartel appl
   - Burns shares from a user. Only callable by Owner (Core).
 - `setURI(string memory newuri) public onlyOwner`
   - Updates the metadata URI.
+

@@ -1,7 +1,7 @@
-# Farcaster Cartel - Project Overview
+# Base Cartel - Project Overview
 
 ## 📖 Introduction
-**Farcaster Cartel** is a social strategy game built as a Farcaster Frame v2 Mini-App on the Base blockchain. Players join a cartel, pool funds, raid other communities, and navigate betrayal mechanics to earn yield and reputation.
+**Base Cartel** is a social strategy game built as a Farcaster Frame v2 Mini-App on the Base blockchain. Players join a cartel, pool funds, raid other communities, and navigate betrayal mechanics to earn yield and reputation.
 
 ## 🎮 Core Mechanics
 
@@ -57,3 +57,4 @@
 - `/contracts`: Solidity smart contracts.
 - `/docs`: Project documentation.
 - `/scripts`: Utility scripts.
+
