@@ -38,7 +38,7 @@ export async function GET() {
         "eip155:8453",
         "eip155:10"
       ],
-      "canonicalDomain": "http://localhost:3000",
+      "canonicalDomain": METADATA.homeUrl,
       "noindex": false,
       "tags": ["base", "baseapp", "miniapp", "game", "strategy", "base-cartel"]
     },
