@@ -10,11 +10,11 @@ import { haptics } from "@/lib/haptics";
 import AutoAgentPanel from "@/components/agent/AutoAgentPanel";
 
 export default function CartelDashboard() {
-    const [shares, setShares] = useState(100);
-    const [potBalance, setPotBalance] = useState(5432);
+    const [shares] = useState(100);
+    const [potBalance] = useState(5432);
     const [profitAmount, setProfitAmount] = useState(42);
-    const [dailyRevenue, setDailyRevenue] = useState(180);
-    const [sharePercentage, setSharePercentage] = useState(2.5);
+    const [dailyRevenue] = useState(180);
+    const [sharePercentage] = useState(2.5);
     const [isClaiming, setIsClaiming] = useState(false);
 
     const handleClaim = async () => {

@@ -6,17 +6,7 @@ import { JOIN_FEE, formatUSDC, CARTEL_CORE_ADDRESS } from "@/lib/basePay";
 import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { useFrameContext } from "./providers/FrameProvider";
 import {
-    ConnectWallet,
-    Wallet,
-    WalletDropdown,
-    WalletDropdownDisconnect,
-} from '@coinbase/onchainkit/wallet';
-import {
-    Address,
     Avatar,
-    Name,
-    Identity,
-    EthBalance,
 } from '@coinbase/onchainkit/identity';
 
 interface JoinCartelProps {
@@ -27,15 +17,16 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
     const { isConnected } = useAccount();
     const { connect, connectors } = useConnect();
     const frameContext = useFrameContext();
-    const { context, isInMiniApp } = frameContext || {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { context, isInMiniApp } = (frameContext || {}) as any;
 
     const [inviteCode, setInviteCode] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showPayment, setShowPayment] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const { writeContract, isPending } = useWriteContract();
-    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    const { writeContract, data: hash } = useWriteContract();
+    const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({
         hash: hash,
     });
 
@@ -94,6 +85,7 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
             onError: (error) => {
                 console.error("Join failed:", error);
                 setIsProcessing(false);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 alert("Failed to join: " + (error as any).shortMessage || error.message);
             }
         });
@@ -115,6 +107,7 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                     {isInMiniApp && context?.user && (
                         <div className="flex flex-col items-center gap-2 mt-4 animate-fade-in">
                             {context.user.pfpUrl && (
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img src={context.user.pfpUrl} alt="Profile" className="w-16 h-16 rounded-full border-2 border-[#4A87FF] glow-blue" />
                             )}
                             <p className="text-zinc-300 font-medium">

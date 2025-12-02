@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 
 interface BadgeItem {
     id: string;
@@ -31,8 +31,8 @@ export default function BadgesList() {
                         <div
                             key={badge.id}
                             className={`p-3 rounded-lg border ${badge.earned
-                                    ? "bg-zinc-800 border-zinc-700"
-                                    : "bg-zinc-950 border-zinc-900 opacity-50"
+                                ? "bg-zinc-800 border-zinc-700"
+                                : "bg-zinc-950 border-zinc-900 opacity-50"
                                 }`}
                         >
                             <div className="text-2xl mb-1">{badge.icon}</div>

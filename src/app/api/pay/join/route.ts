@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { ethers } from 'ethers';
-import CartelCoreABI from '@/lib/abi/CartelCore.json';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { validateAddress, validateTxHash, ValidationError } from '@/lib/validation';
 
@@ -10,6 +9,7 @@ const RPC_URL = process.env.BASE_RPC_URL || 'https://mainnet.base.org';
 export async function POST(request: Request) {
     try {
         // Apply rate limiting
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rateLimitResult = await rateLimit(RATE_LIMITS.payment)(request as any);
         if (rateLimitResult) {
             return rateLimitResult;

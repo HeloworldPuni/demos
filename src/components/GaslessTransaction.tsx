@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 
 interface GaslessTransactionProps {
     action: 'join' | 'raid';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     args: any[];
     onSuccess?: () => void;
     onError?: (error: Error) => void;
@@ -41,6 +42,7 @@ export function GaslessTransaction({ action, args, onSuccess, onError }: Gasless
                         args: args,
                         // Paymaster will be used automatically if configured in WagmiProvider
                     });
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } catch (paymasterError: any) {
                     console.error('[Paymaster] Failed:', paymasterError);
 
@@ -67,6 +69,7 @@ export function GaslessTransaction({ action, args, onSuccess, onError }: Gasless
             if (isConfirmed && onSuccess) {
                 onSuccess();
             }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error('[Transaction] Failed:', error);
             setErrorMessage(error?.message || 'Transaction failed');

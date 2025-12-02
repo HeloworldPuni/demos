@@ -32,6 +32,7 @@ class NeynarService {
         this.signerUuid = SIGNER_UUID || '';
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async postCast(params: CastParams): Promise<any> {
         if (!this.apiKey || !this.signerUuid) {
             console.log('[Neynar] Skipping cast (credentials missing):', params.text);

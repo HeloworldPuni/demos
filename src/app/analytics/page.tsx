@@ -132,7 +132,7 @@ export default function AnalyticsDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <Card className="bg-zinc-900 border-zinc-800">
                     <CardHeader>
-                        <CardTitle className="text-white">Today's Activity</CardTitle>
+                        <CardTitle className="text-white">Today&apos;s Activity</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">

@@ -10,9 +10,9 @@ interface InviteModalProps {
 
 export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
     const [inviteLink, setInviteLink] = useState("");
-    const [invitesLeft, setInvitesLeft] = useState(3);
-    const [referralCount, setReferralCount] = useState(5);
-    const [bonusEarned, setBonusEarned] = useState(100);
+    const [invitesLeft] = useState(3);
+    const [referralCount] = useState(5);
+    const [bonusEarned] = useState(100);
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {

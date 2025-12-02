@@ -18,12 +18,12 @@ export const config = createConfig({
       appName: METADATA.name,
       appLogoUrl: METADATA.iconImageUrl,
       // Paymaster configuration for gasless transactions
-      paymaster: {
-        url: process.env.NEXT_PUBLIC_BASE_PAY_PAYMASTER_URL || 'https://paymaster.base.org',
-        context: {
-          policyId: process.env.NEXT_PUBLIC_PAYMASTER_POLICY_ID,
-        },
-      },
+      // paymaster: {
+      //   url: process.env.NEXT_PUBLIC_BASE_PAY_PAYMASTER_URL || 'https://paymaster.base.org',
+      //   context: {
+      //     policyId: process.env.NEXT_PUBLIC_PAYMASTER_POLICY_ID,
+      //   },
+      // },
     }),
     coinbaseWallet({
       appName: METADATA.name,

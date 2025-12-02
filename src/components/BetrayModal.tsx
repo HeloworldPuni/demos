@@ -11,7 +11,8 @@ interface BetrayModalProps {
 export default function BetrayModal({ isOpen, onClose }: BetrayModalProps) {
     const [step, setStep] = useState<'warn' | 'confirm' | 'betraying' | 'result'>('warn');
     const [payout, setPayout] = useState(0);
-    const composeCast = useComposeCast();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { composeCast } = useComposeCast() as any;
 
     if (!isOpen) return null;
 

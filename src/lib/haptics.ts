@@ -6,7 +6,7 @@ export const haptics = {
     light: async () => {
         try {
             await sdk.haptics.impactOccurred('light');
-        } catch (error) {
+        } catch {
             console.log('Haptics not supported');
         }
     },
@@ -15,7 +15,7 @@ export const haptics = {
     medium: async () => {
         try {
             await sdk.haptics.impactOccurred('medium');
-        } catch (error) {
+        } catch {
             console.log('Haptics not supported');
         }
     },
@@ -24,7 +24,7 @@ export const haptics = {
     heavy: async () => {
         try {
             await sdk.haptics.impactOccurred('heavy');
-        } catch (error) {
+        } catch {
             console.log('Haptics not supported');
         }
     },
@@ -33,7 +33,7 @@ export const haptics = {
     success: async () => {
         try {
             await sdk.haptics.notificationOccurred('success');
-        } catch (error) {
+        } catch {
             console.log('Haptics not supported');
         }
     },
@@ -42,7 +42,7 @@ export const haptics = {
     warning: async () => {
         try {
             await sdk.haptics.notificationOccurred('warning');
-        } catch (error) {
+        } catch {
             console.log('Haptics not supported');
         }
     },
@@ -51,7 +51,7 @@ export const haptics = {
     error: async () => {
         try {
             await sdk.haptics.notificationOccurred('error');
-        } catch (error) {
+        } catch {
             console.log('Haptics not supported');
         }
     },
@@ -60,7 +60,7 @@ export const haptics = {
     selection: async () => {
         try {
             await sdk.haptics.selectionChanged();
-        } catch (error) {
+        } catch {
             console.log('Haptics not supported');
         }
     },

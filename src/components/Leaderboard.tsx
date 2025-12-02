@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Button } from "@/components/ui/button";
 // import { useViewProfile } from "@coinbase/onchainkit/minikit";
 import { haptics } from "@/lib/haptics";
@@ -57,22 +57,22 @@ export default function Leaderboard() {
                                 <div
                                     key={player.rank}
                                     className={`p-3 rounded-lg border transition-all duration-300 ${player.rank === 1
-                                            ? "bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 border-[#D4AF37]/50 glow-gold"
-                                            : player.rank === 2
-                                                ? "bg-gradient-to-r from-zinc-400/20 to-zinc-400/5 border-zinc-400/50"
-                                                : player.rank === 3
-                                                    ? "bg-gradient-to-r from-orange-600/20 to-orange-600/5 border-orange-600/50"
-                                                    : isTopTen
-                                                        ? "bg-[#1B1F26] border-[#4A87FF]/20"
-                                                        : "bg-[#1B1F26] border-zinc-800"
+                                        ? "bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 border-[#D4AF37]/50 glow-gold"
+                                        : player.rank === 2
+                                            ? "bg-gradient-to-r from-zinc-400/20 to-zinc-400/5 border-zinc-400/50"
+                                            : player.rank === 3
+                                                ? "bg-gradient-to-r from-orange-600/20 to-orange-600/5 border-orange-600/50"
+                                                : isTopTen
+                                                    ? "bg-[#1B1F26] border-[#4A87FF]/20"
+                                                    : "bg-[#1B1F26] border-zinc-800"
                                         }`}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3 flex-1">
                                             <div className={`text-2xl font-black ${player.rank === 1 ? "text-[#D4AF37]" :
-                                                    player.rank === 2 ? "text-zinc-300" :
-                                                        player.rank === 3 ? "text-orange-500" :
-                                                            "text-zinc-500"
+                                                player.rank === 2 ? "text-zinc-300" :
+                                                    player.rank === 3 ? "text-orange-500" :
+                                                        "text-zinc-500"
                                                 }`}>
                                                 {player.rank === 1 && "👑"}
                                                 {player.rank === 2 && "🥈"}

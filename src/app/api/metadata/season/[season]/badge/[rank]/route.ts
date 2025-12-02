@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server';
 // Sample badge metadata for Season 1, Rank 1 (Kingpin)
 export async function GET(
     request: Request,
-    { params }: { params: { season: string; rank: string } }
+    { params }: { params: Promise<{ season: string; rank: string }> }
 ) {
-    const { season, rank } = params;
+    const { season, rank } = await params;
     const rankNum = parseInt(rank);
     const seasonNum = parseInt(season);
 
