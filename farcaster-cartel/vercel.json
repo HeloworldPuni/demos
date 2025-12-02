@@ -23,8 +23,5 @@
     },
     "regions": [
         "iad1"
-    ],
-    "buildOptimization": {
-        "turbo": true
-    }
+    ]
 }
