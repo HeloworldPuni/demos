@@ -50,6 +50,7 @@ export default function InvitesDashboard() {
         if (address) {
             fetchData();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [address]);
 
     const fetchData = async () => {
@@ -95,7 +96,7 @@ export default function InvitesDashboard() {
                 text: text,
                 embeds: []
             });
-        } catch (e) {
+        } catch {
             // Fallback for web
             window.open(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`, '_blank');
         }

@@ -3,11 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import PaymentModal from "./PaymentModal";
 import { JOIN_FEE, formatUSDC } from "@/lib/basePay";
-import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useConnect, useWaitForTransactionReceipt } from 'wagmi';
 import { useFrameContext } from "./providers/FrameProvider";
-import {
-    Avatar,
-} from '@coinbase/onchainkit/identity';
+// Removed unused Avatar import
 
 interface JoinCartelProps {
     onJoin: (inviteCode: string) => void;
@@ -25,10 +23,19 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
     const [showPayment, setShowPayment] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const { writeContract, data: hash } = useWriteContract();
-    const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-        hash: hash,
-    });
+    // Removed unused writeContract
+    // const { writeContract, data: hash } = useWriteContract();
+    // Assuming hash was used in useWaitForTransactionReceipt, we need to check if it's actually used.
+    // Looking at the original code, useWaitForTransactionReceipt was using `hash`. 
+    // If writeContract is removed, hash is gone. 
+    // But wait, the component logic relies on `isConfirmed` from `useWaitForTransactionReceipt`.
+    // However, the new logic uses `fetch` to `/api/auth/join-with-invite` and does NOT use `writeContract` anymore.
+    // So `useWaitForTransactionReceipt` might also be unused if we are not sending a transaction on chain directly here.
+    // Let's check the handleConfirmPayment logic again.
+    // It calls `fetch`, then sets `isConfirmed` logic manually via state? No, it sets `setIsProcessing(false)` and `setShowPayment(false)`.
+    // The `useEffect` listening to `isConfirmed` is likely dead code now if we aren't using `writeContract`.
+
+    // Let's remove the dead hook usage entirely.
 
     // Auto-connect if in MiniApp
     useEffect(() => {
@@ -40,17 +47,7 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
         }
     }, [isInMiniApp, isConnected, connectors, connect]);
 
-    useEffect(() => {
-        if (isConfirmed) {
-            setIsProcessing(false);
-            setShowPayment(false);
-            setIsLoading(true);
-            // Allow time for indexer/RPC to update
-            setTimeout(() => {
-                onJoin(inviteCode);
-            }, 2000);
-        }
-    }, [isConfirmed, onJoin, inviteCode]);
+    // Removed dead useEffect for transaction receipt as we use API now
 
     const handleJoinClick = () => {
         if (!inviteCode) {

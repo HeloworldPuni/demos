@@ -32,7 +32,7 @@ export default function GodMode() {
             } else {
                 setError(data.error || "Failed to generate invite");
             }
-        } catch (err) {
+        } catch {
             setError("Network error");
         } finally {
             setIsLoading(false);

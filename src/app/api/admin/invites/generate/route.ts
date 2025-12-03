@@ -35,11 +35,11 @@ export async function POST(request: Request) {
         return NextResponse.json({
             success: true,
             count: createdInvites.length,
-            invites: createdInvites.map(i => i.code)
+            invites: createdInvites.map((i: any) => i.code)
         });
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Error generating invites:', error);
-        return NextResponse.json({ success: false, error: error.message, stack: error.stack }, { status: 200 });
+        return NextResponse.json({ success: false, error: (error as any).message, stack: (error as any).stack }, { status: 200 });
     }
 }

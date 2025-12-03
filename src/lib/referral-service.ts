@@ -48,8 +48,25 @@ export async function trackReferralProfit(refereeUserId: string, profitAmount: n
     }
 }
 
-// Update referrer's total points
-await updateReferrerTotalPoints(referral.referrerId);
+async function updateReferralPoints(referralId: string) {
+    const referral = await prisma.referral.findUnique({
+        where: { id: referralId }
+    });
+
+    if (!referral || !referral.isRewardable) return;
+
+    // Calculate points: (alpha * fees) + (beta * profit)
+    const points = (REFERRAL_POINTS_ALPHA * referral.totalFeesPaidByReferee) +
+        (REFERRAL_POINTS_BETA * referral.totalProfitShareEarnedByReferee);
+
+    // Update referral record
+    await prisma.referral.update({
+        where: { id: referralId },
+        data: { referralPoints: points }
+    });
+
+    // Update referrer's total points
+    await updateReferrerTotalPoints(referral.referrerId);
 }
 
 async function updateReferrerTotalPoints(referrerId: string) {

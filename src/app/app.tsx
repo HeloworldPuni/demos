@@ -34,7 +34,7 @@ export default function App() {
   const isValidContract = CARTEL_SHARES_ADDRESS && CARTEL_SHARES_ADDRESS !== '0x0000000000000000000000000000000000000000';
 
   // Check if user has shares (ID 1)
-  const { data: shareBalance, isLoading: isBalanceLoading, isError: isBalanceError } = useReadContract({
+  const { data: shareBalance, isLoading: isBalanceLoading } = useReadContract({
     address: CARTEL_SHARES_ADDRESS as `0x${string}`,
     abi: SHARES_ABI,
     functionName: 'balanceOf',
