@@ -31,20 +31,36 @@ export default function App() {
   const [currentView, setCurrentView] = useState<"dashboard" | "leaderboard">("dashboard");
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
+  const isValidContract = CARTEL_SHARES_ADDRESS && CARTEL_SHARES_ADDRESS !== '0x0000000000000000000000000000000000000000';
+
   // Check if user has shares (ID 1)
-  const { data: shareBalance, isLoading: isBalanceLoading } = useReadContract({
+  const { data: shareBalance, isLoading: isBalanceLoading, isError: isBalanceError } = useReadContract({
     address: CARTEL_SHARES_ADDRESS as `0x${string}`,
     abi: SHARES_ABI,
     functionName: 'balanceOf',
     args: address ? [address, BigInt(1)] : undefined,
     query: {
-      enabled: !!address,
+      enabled: !!address && isValidContract,
     }
   });
 
   useEffect(() => {
     // If connected, wait for balance check
     if (isConnected) {
+      // If contract is invalid, stop loading (assume not joined)
+      if (!isValidContract) {
+        console.warn("Contract address not set, skipping balance check");
+        setIsCheckingStatus(false);
+        return;
+      }
+
+      // If error, stop loading
+      if (isBalanceError) {
+        console.error("Error reading balance");
+        setIsCheckingStatus(false);
+        return;
+      }
+
       if (!isBalanceLoading && shareBalance !== undefined) {
         if (shareBalance > BigInt(0)) {
           setHasJoined(true);
@@ -63,7 +79,7 @@ export default function App() {
         setIsCheckingStatus(false);
       }
     }
-  }, [isConnected, shareBalance, isBalanceLoading, isInMiniApp]);
+  }, [isConnected, shareBalance, isBalanceLoading, isInMiniApp, isValidContract, isBalanceError]);
 
   if (isCheckingStatus) {
     return (
