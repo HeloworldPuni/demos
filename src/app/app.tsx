@@ -45,41 +45,37 @@ export default function App() {
   });
 
   useEffect(() => {
-    // If connected, wait for balance check
-    if (isConnected) {
-      // If contract is invalid, stop loading (assume not joined)
-      if (!isValidContract) {
-        console.warn("Contract address not set, skipping balance check");
-        setIsCheckingStatus(false);
-        return;
-      }
+    const checkUserStatus = async () => {
+      if (isConnected && address) {
+        try {
+          // Check on-chain balance first (legacy/future proof)
+          if (isValidContract && !isBalanceLoading && shareBalance && shareBalance > BigInt(0)) {
+            setHasJoined(true);
+            setIsCheckingStatus(false);
+            return;
+          }
 
-      // If error, stop loading
-      if (isBalanceError) {
-        console.error("Error reading balance");
-        setIsCheckingStatus(false);
-        return;
-      }
-
-      if (!isBalanceLoading && shareBalance !== undefined) {
-        if (shareBalance > BigInt(0)) {
-          setHasJoined(true);
+          // Check off-chain DB (Invite System)
+          const response = await fetch(`/api/me/invites?walletAddress=${address}`);
+          if (response.ok) {
+            // If we can fetch invites, the user exists
+            setHasJoined(true);
+          }
+        } catch (error) {
+          console.error("Error checking user status:", error);
+        } finally {
+          setIsCheckingStatus(false);
         }
-        setIsCheckingStatus(false);
-      }
-    } else {
-      // If not connected
-      if (isInMiniApp) {
-        // In MiniApp, wait for auto-connect (handled in JoinCartel or implicitly)
-        // But we can't wait forever here without feedback.
-        // Let's allow JoinCartel to render, it handles the "Connecting..." UI.
-        setIsCheckingStatus(false);
       } else {
-        // Not in MiniApp, ready to show Join screen
-        setIsCheckingStatus(false);
+        // Not connected
+        if (!isInMiniApp) {
+          setIsCheckingStatus(false);
+        }
       }
-    }
-  }, [isConnected, shareBalance, isBalanceLoading, isInMiniApp, isValidContract, isBalanceError]);
+    };
+
+    checkUserStatus();
+  }, [isConnected, address, shareBalance, isBalanceLoading, isValidContract, isInMiniApp]);
 
   if (isCheckingStatus) {
     return (

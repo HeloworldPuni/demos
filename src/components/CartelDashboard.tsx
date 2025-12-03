@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -120,17 +121,14 @@ export default function CartelDashboard() {
                         <span className="text-3xl">⚔️</span>
                         <span className="font-bold heading-font">Raid</span>
                     </Button>
-                    <Button
-                        variant="outline"
-                        className="h-28 border-2 border-[#4FF0E6]/40 bg-[#4FF0E6]/5 hover:bg-[#4FF0E6]/20 hover:border-[#4FF0E6] text-white flex flex-col gap-2 rounded-xl transition-all duration-300"
-                        onClick={async () => {
-                            await haptics.light();
-                            setIsInviteModalOpen(true);
-                        }}
-                    >
-                        <span className="text-3xl">🤝</span>
-                        <span className="font-bold heading-font">Invite</span>
-                    </Button>
+                    <Link href="/invites" className="w-full" onClick={async () => await haptics.light()}>
+                        <div
+                            className="w-full h-28 border-2 border-[#4FF0E6]/40 bg-[#4FF0E6]/5 hover:bg-[#4FF0E6]/20 hover:border-[#4FF0E6] text-white flex flex-col gap-2 rounded-xl transition-all duration-300 items-center justify-center cursor-pointer"
+                        >
+                            <span className="text-3xl">🤝</span>
+                            <span className="font-bold heading-font">Invite</span>
+                        </div>
+                    </Link>
                     <Button
                         variant="outline"
                         className="h-28 border-2 border-[#FF3B30]/60 bg-[#FF3B30]/10 hover:bg-[#FF3B30]/30 hover:border-[#FF3B30] hover:glow-red text-white flex flex-col gap-2 col-span-2 rounded-xl transition-all duration-300"

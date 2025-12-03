@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import PaymentModal from "./PaymentModal";
-import { JOIN_FEE, formatUSDC, CARTEL_CORE_ADDRESS } from "@/lib/basePay";
+import { JOIN_FEE, formatUSDC } from "@/lib/basePay";
 import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { useFrameContext } from "./providers/FrameProvider";
 import {
@@ -14,7 +14,7 @@ interface JoinCartelProps {
 }
 
 export default function JoinCartel({ onJoin }: JoinCartelProps) {
-    const { isConnected } = useAccount();
+    const { isConnected, address } = useAccount();
     const { connect, connectors } = useConnect();
     const frameContext = useFrameContext();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,38 +57,56 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
             alert("Invite code required for Phase 1!");
             return;
         }
-        // Validate address format
-        if (!/^0x[a-fA-F0-9]{40}$/.test(inviteCode)) {
-            alert("Invalid invite code! Must be a valid Ethereum address.");
+        // Validate format (simple check)
+        if (!inviteCode.startsWith("BASE-")) {
+            alert("Invalid invite code! Must start with BASE-");
             return;
         }
         setShowPayment(true);
     };
 
-    const handleConfirmPayment = () => {
+    const handleConfirmPayment = async () => {
         setIsProcessing(true);
 
-        writeContract({
-            address: CARTEL_CORE_ADDRESS as `0x${string}`,
-            abi: [
-                {
-                    name: 'join',
-                    type: 'function',
-                    stateMutability: 'nonpayable',
-                    inputs: [{ name: 'referrer', type: 'address' }],
-                    outputs: []
+        try {
+            const response = await fetch('/api/auth/join-with-invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    walletAddress: address,
+                    farcasterId: context?.user?.fid,
+                    inviteCode: inviteCode
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // If user already exists, just proceed to dashboard
+                if (data.error === 'User already exists') {
+                    console.log("User already exists, proceeding to dashboard...");
+                } else {
+                    throw new Error(data.error || 'Failed to join');
                 }
-            ],
-            functionName: 'join',
-            args: [inviteCode as `0x${string}`],
-        }, {
-            onError: (error) => {
-                console.error("Join failed:", error);
-                setIsProcessing(false);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                alert("Failed to join: " + (error as any).shortMessage || error.message);
             }
-        });
+
+            // Success
+            setIsProcessing(false);
+            setShowPayment(false);
+            setIsLoading(true);
+
+            // Store new invites in local storage or state if needed, 
+            // but for now just proceed to dashboard
+            setTimeout(() => {
+                onJoin(inviteCode);
+            }, 1000);
+
+        } catch (error) {
+            console.error("Join failed:", error);
+            setIsProcessing(false);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            alert("Failed to join: " + (error as any).message);
+        }
     };
 
     return (
@@ -98,10 +116,10 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                     <div className="mb-6">
                         <div className="text-6xl mb-4">🎩</div>
                         <CardTitle className="text-4xl font-black heading-font text-neon-blue mb-2">
-                            BASE CARTEL
+                            ENTER THE CARTEL
                         </CardTitle>
                         <p className="text-sm text-[#D4AF37] font-medium tracking-wider">
-                            RULE THE CHAIN
+                            INVITE-ONLY ACCESS
                         </p>
                     </div>
                     {isInMiniApp && context?.user && (
@@ -118,7 +136,7 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                 </CardHeader>
                 <CardContent className="space-y-6 px-6 pb-8">
                     <p className="text-center text-zinc-400 text-sm leading-relaxed">
-                        Join the most ruthless syndicate on Base. Earn profit share, raid rivals, and climb the ranks.
+                        Base Cartel is invite-only during this phase. Enter your code to get in.
                     </p>
 
                     <div className="card-glow p-5 rounded-xl space-y-3">
@@ -162,7 +180,22 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                                         }
                                     }}
                                 >
-                                    <Avatar className="h-6 w-6" />
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className="h-6 w-6"
+                                    >
+                                        <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" />
+                                        <path d="M4 6v12c0 1.1.9 2 2 2h14v-4" />
+                                        <path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" />
+                                    </svg>
                                     Connect Wallet
                                 </Button>
                             )}
@@ -173,7 +206,7 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                                 <label className="text-sm text-zinc-400 font-medium">Invite Code (Required)</label>
                                 <input
                                     type="text"
-                                    placeholder="0x..."
+                                    placeholder="BASE-XXXXXX"
                                     className="w-full bg-[#0B0E12] border-2 border-[#4A87FF]/30 rounded-lg p-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#4A87FF] focus:glow-blue transition-all"
                                     value={inviteCode}
                                     onChange={(e) => setInviteCode(e.target.value)}
