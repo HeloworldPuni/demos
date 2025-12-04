@@ -38,8 +38,13 @@ interface ReferralStats {
     };
 }
 
-export default function InvitesDashboard() {
-    const { address } = useAccount();
+interface InvitesDashboardProps {
+    address?: string;
+}
+
+export default function InvitesDashboard({ address: propAddress }: InvitesDashboardProps) {
+    const { address: accountAddress } = useAccount();
+    const address = propAddress || accountAddress;
     const [invites, setInvites] = useState<Invite[]>([]);
     const [referrals, setReferrals] = useState<Referral[]>([]);
     const [stats, setStats] = useState<ReferralStats | null>(null);

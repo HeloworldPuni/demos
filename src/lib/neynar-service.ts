@@ -71,8 +71,8 @@ class NeynarService {
     // Raid event auto-post
     async postRaidEvent(raider: string, target: string, amountStolen: number, success: boolean) {
         const castText = success
-            ? `⚔️ RAID SUCCESSFUL!\n\n${raider} just raided ${target} and stole ${amountStolen} shares!\n\nThe cartel grows stronger. 💪\n\n#FarcasterCartel`
-            : `⚔️ Raid attempted by ${raider} on ${target} but failed!\n\nBetter luck next time. 🎲\n\n#FarcasterCartel`;
+            ? `⚔️ RAID SUCCESSFUL!\n\n${raider} just raided ${target} and stole ${amountStolen} shares!\n\nThe cartel grows stronger. 💪\n\n#BaseCartel`
+            : `⚔️ Raid attempted by ${raider} on ${target} but failed!\n\nBetter luck next time. 🎲\n\n#BaseCartel`;
 
         return this.postCast({
             text: castText,
@@ -82,7 +82,7 @@ class NeynarService {
 
     // Betrayal event auto-post
     async postBetrayalEvent(traitor: string, amountStolen: number) {
-        const castText = `🩸 BETRAYAL!\n\n${traitor} has betrayed the cartel and walked away with ${amountStolen} USDC!\n\nTrust no one. 🗡️\n\n#FarcasterCartel #Betrayal`;
+        const castText = `🩸 BETRAYAL!\n\n${traitor} has betrayed the cartel and walked away with ${amountStolen} USDC!\n\nTrust no one. 🗡️\n\n#BaseCartel #Betrayal`;
 
         return this.postCast({
             text: castText,
@@ -93,8 +93,8 @@ class NeynarService {
     // Season event auto-post
     async postSeasonEvent(seasonNumber: number, type: 'start' | 'end') {
         const castText = type === 'start'
-            ? `🎭 SEASON ${seasonNumber} HAS BEGUN!\n\nA new era starts today. Join the cartel and climb the ranks.\n\nWho will be the kingpin? 👑\n\n#FarcasterCartel #Season${seasonNumber}`
-            : `🏆 SEASON ${seasonNumber} HAS ENDED!\n\nCongratulations to all survivors. Check the final leaderboard to see who dominated.\n\nSeason ${seasonNumber + 1} begins soon. 🔥\n\n#FarcasterCartel`;
+            ? `🎭 SEASON ${seasonNumber} HAS BEGUN!\n\nA new era starts today. Join the cartel and climb the ranks.\n\nWho will be the kingpin? 👑\n\n#BaseCartel #Season${seasonNumber}`
+            : `🏆 SEASON ${seasonNumber} HAS ENDED!\n\nCongratulations to all survivors. Check the final leaderboard to see who dominated.\n\nSeason ${seasonNumber + 1} begins soon. 🔥\n\n#BaseCartel`;
 
         return this.postCast({
             text: castText,
@@ -105,8 +105,8 @@ class NeynarService {
     // New member welcome post
     async postWelcomeEvent(playerAddress: string, referrer?: string) {
         const castText = referrer
-            ? `🤝 New recruit!\n\n${playerAddress} just joined the cartel (referred by ${referrer}).\n\nWelcome to the family. 🎩\n\n#FarcasterCartel`
-            : `🎩 ${playerAddress} just joined the Base Cartel!\n\nWelcome to the most ruthless syndicate on Base. 💼\n\n#FarcasterCartel`;
+            ? `🤝 New recruit!\n\n${playerAddress} just joined the cartel (referred by ${referrer}).\n\nWelcome to the family. 🎩\n\n#BaseCartel`
+            : `🎩 ${playerAddress} just joined the Base Cartel!\n\nWelcome to the most ruthless syndicate on Base. 💼\n\n#BaseCartel`;
 
         return this.postCast({
             text: castText,

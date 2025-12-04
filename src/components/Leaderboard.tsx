@@ -1,38 +1,44 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { Button } from "@/components/ui/button";
-// import { useViewProfile } from "@coinbase/onchainkit/minikit";
 import { haptics } from "@/lib/haptics";
+import { getCartelTitle, getTitleTheme } from "@/lib/cartel-titles";
 
 interface Player {
     rank: number;
     name: string;
     shares: number;
-    yield: number;
+    totalClaimed: number;
     fid?: number;
 }
 
-const MOCK_LEADERBOARD: Player[] = [
-    { rank: 1, name: "kingpin.eth", shares: 2450, yield: 122, fid: 3621 },
-    { rank: 2, name: "shadowboss.base", shares: 1890, yield: 94, fid: 12345 },
-    { rank: 3, name: "whale.eth", shares: 1420, yield: 71, fid: 67890 },
-    { rank: 4, name: "hustler25", shares: 980, yield: 49 },
-    { rank: 5, name: "grinder.base", shares: 750, yield: 37 },
-    { rank: 6, name: "crypto_don", shares: 620, yield: 31 },
-    { rank: 7, name: "vault.base", shares: 580, yield: 29 },
-    { rank: 8, name: "raider99", shares: 510, yield: 25 },
-    { rank: 9, name: "boss.eth", shares: 480, yield: 24 },
-    { rank: 10, name: "cartel_og", shares: 450, yield: 22 },
-];
+import { useState, useEffect } from 'react';
 
 export default function Leaderboard() {
-    // const viewProfile = useViewProfile();
+    const [players, setPlayers] = useState<Player[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchLeaderboard = async () => {
+            try {
+                const res = await fetch('/api/cartel/leaderboard');
+                const data = await res.json();
+                if (data.leaderboard) {
+                    setPlayers(data.leaderboard);
+                }
+            } catch (error) {
+                console.error("Failed to fetch leaderboard:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchLeaderboard();
+    }, []);
 
     const handleViewProfile = async (fid?: number) => {
         if (fid) {
             await haptics.light();
             console.log("View profile:", fid);
-            // viewProfile({ fid });
         }
     };
 
@@ -48,64 +54,81 @@ export default function Leaderboard() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-2">
-                        {MOCK_LEADERBOARD.map((player) => {
-                            const isTopThree = player.rank <= 3;
-                            const isTopTen = player.rank <= 10;
+                    {loading ? (
+                        <div className="space-y-4 animate-pulse">
+                            {[...Array(5)].map((_, i) => (
+                                <div key={i} className="h-16 bg-zinc-900 rounded-lg"></div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            {players.map((player) => {
+                                const title = getCartelTitle(player.rank, player.shares);
+                                const theme = getTitleTheme(title);
+                                const isTopThree = player.rank <= 3;
+                                const isTopTen = player.rank <= 10;
 
-                            return (
-                                <div
-                                    key={player.rank}
-                                    className={`p-3 rounded-lg border transition-all duration-300 ${player.rank === 1
-                                        ? "bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 border-[#D4AF37]/50 glow-gold"
-                                        : player.rank === 2
-                                            ? "bg-gradient-to-r from-zinc-400/20 to-zinc-400/5 border-zinc-400/50"
-                                            : player.rank === 3
-                                                ? "bg-gradient-to-r from-orange-600/20 to-orange-600/5 border-orange-600/50"
-                                                : isTopTen
-                                                    ? "bg-[#1B1F26] border-[#4A87FF]/20"
-                                                    : "bg-[#1B1F26] border-zinc-800"
-                                        }`}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3 flex-1">
-                                            <div className={`text-2xl font-black ${player.rank === 1 ? "text-[#D4AF37]" :
-                                                player.rank === 2 ? "text-zinc-300" :
-                                                    player.rank === 3 ? "text-orange-500" :
-                                                        "text-zinc-500"
-                                                }`}>
-                                                {player.rank === 1 && "👑"}
-                                                {player.rank === 2 && "🥈"}
-                                                {player.rank === 3 && "🥉"}
-                                                {player.rank > 3 && `#${player.rank}`}
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className={`font-bold ${isTopThree ? "text-white" : "text-zinc-300"
+                                return (
+                                    <div
+                                        key={player.rank}
+                                        className={`p-3 rounded-lg border transition-all duration-300 ${player.rank === 1
+                                            ? "bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 border-[#D4AF37]/50 glow-gold"
+                                            : player.rank === 2
+                                                ? "bg-gradient-to-r from-zinc-400/20 to-zinc-400/5 border-zinc-400/50"
+                                                : player.rank === 3
+                                                    ? "bg-gradient-to-r from-orange-600/20 to-orange-600/5 border-orange-600/50"
+                                                    : isTopTen
+                                                        ? "bg-[#1B1F26] border-[#4A87FF]/20"
+                                                        : "bg-[#1B1F26] border-zinc-800"
+                                            }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3 flex-1">
+                                                <div className={`text-2xl font-black ${player.rank === 1 ? "text-[#D4AF37]" :
+                                                    player.rank === 2 ? "text-zinc-300" :
+                                                        player.rank === 3 ? "text-orange-500" :
+                                                            "text-zinc-500"
                                                     }`}>
-                                                    {player.name}
+                                                    {player.rank === 1 && "👑"}
+                                                    {player.rank === 2 && "🥈"}
+                                                    {player.rank === 3 && "🥉"}
+                                                    {player.rank > 3 && `#${player.rank}`}
                                                 </div>
-                                                <div className="text-xs text-zinc-500 flex items-center gap-2">
-                                                    <span className="text-[#4A87FF]">{player.shares} shares</span>
-                                                    <span>•</span>
-                                                    <span className="text-[#3DFF72]">${player.yield}/day</span>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`font-bold ${isTopThree ? "text-white" : "text-zinc-300"
+                                                            }`}>
+                                                            {player.name}
+                                                        </div>
+                                                        {/* Title Badge */}
+                                                        <div className={`text-[10px] px-1.5 py-0.5 rounded border border-white/10 ${theme.color} bg-black/30 flex items-center gap-1`}>
+                                                            <span>{theme.icon}</span>
+                                                            <span className="uppercase tracking-wider font-bold">{title}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-xs text-zinc-500 flex items-center gap-2 mt-0.5">
+                                                        <span className="text-[#4A87FF]">{player.shares} shares</span>
+                                                        <span>•</span>
+                                                        <span className="text-[#3DFF72]">${player.totalClaimed.toLocaleString()} claimed</span>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            {player.fid && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleViewProfile(player.fid)}
+                                                    className="text-xs h-7 border-[#4A87FF]/30 hover:border-[#4A87FF] hover:bg-[#4A87FF]/10 text-[#4A87FF]"
+                                                >
+                                                    View
+                                                </Button>
+                                            )}
                                         </div>
-                                        {player.fid && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleViewProfile(player.fid)}
-                                                className="text-xs h-7 border-[#4A87FF]/30 hover:border-[#4A87FF] hover:bg-[#4A87FF]/10 text-[#4A87FF]"
-                                            >
-                                                View
-                                            </Button>
-                                        )}
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
 
                     <div className="mt-6 p-4 bg-[#4A87FF]/5 border border-[#4A87FF]/20 rounded-lg text-center">
                         <p className="text-sm text-zinc-400">

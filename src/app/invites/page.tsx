@@ -3,8 +3,12 @@
 import InvitesDashboard from "@/components/InvitesDashboard";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useSearchParams } from 'next/navigation';
 
 export default function InvitesPage() {
+    const searchParams = useSearchParams();
+    const address = searchParams.get('address') || undefined;
+
     return (
         <div className="min-h-screen bg-[#0B0E12] pb-24">
             {/* Nav Header */}
@@ -19,7 +23,7 @@ export default function InvitesPage() {
             </div>
 
             <div className="container max-w-md mx-auto p-4 pt-6">
-                <InvitesDashboard />
+                <InvitesDashboard address={address} />
             </div>
         </div>
     );

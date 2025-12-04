@@ -6,5 +6,19 @@
     "framework": "nextjs",
     "regions": [
         "iad1"
+    ],
+    "crons": [
+        {
+            "path": "/api/cron/daily-leaderboard",
+            "schedule": "0 0 * * *"
+        },
+        {
+            "path": "/api/cron/index-events",
+            "schedule": "* * * * *"
+        },
+        {
+            "path": "/api/cron/generate-news",
+            "schedule": "*/5 * * * *"
+        }
     ]
 }

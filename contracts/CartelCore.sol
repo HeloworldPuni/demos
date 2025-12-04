@@ -248,8 +248,7 @@ contract CartelCore is Ownable, ReentrancyGuard {
         _highStakesRaid(msg.sender, target);
     }
 
-    function highStakesRaidFor(address user, address target) external {
-        require(authorizedAgents[msg.sender], "Not authorized agent");
+    function highStakesRaidFor(address user, address target) external onlyAgent {
         _highStakesRaid(user, target);
     }
 
@@ -295,8 +294,7 @@ contract CartelCore is Ownable, ReentrancyGuard {
         _retireFromCartel(msg.sender);
     }
 
-    function retireFromCartelFor(address user) external nonReentrant {
-        require(authorizedAgents[msg.sender], "Not authorized agent");
+    function retireFromCartelFor(address user) external nonReentrant onlyAgent {
         _retireFromCartel(user);
     }
 

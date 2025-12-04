@@ -8,7 +8,10 @@ import "./IERC20.sol";
 
 interface ICartelCore {
     function raidFor(address user, address target) external;
+    function highStakesRaidFor(address user, address target) external;
     function claimYieldFor(address user) external;
+    function RAID_FEE() external view returns (uint256);
+    function HIGH_STAKES_RAID_FEE() external view returns (uint256);
 }
 
 contract AgentVault is EIP712, Ownable {
@@ -29,7 +32,7 @@ contract AgentVault is EIP712, Ownable {
     event Withdraw(address indexed user, uint256 amount);
     event ActionExecuted(address indexed user, string action, uint256 fee);
 
-    constructor(address _usdc, address _cartelCore) EIP712("FarcasterCartelAgent", "1") Ownable(msg.sender) {
+    constructor(address _usdc, address _cartelCore) EIP712("BaseCartelAgent", "1") Ownable(msg.sender) {
         usdc = IERC20(_usdc);
         cartelCore = ICartelCore(_cartelCore);
         
@@ -80,9 +83,8 @@ contract AgentVault is EIP712, Ownable {
         if (keccak256(bytes(action)) == keccak256(bytes("raid"))) {
             address target = abi.decode(data, (address));
             
-            // Get fee from CartelCore (or hardcode if getter fails/not present)
-            // For MVP safety, we'll use the known constant 5000 (0.005 USDC)
-            uint256 fee = 5000; 
+            // Get fee dynamically from CartelCore
+            uint256 fee = cartelCore.RAID_FEE();
             
             require(balances[user] >= fee, "Insufficient user balance for raid fee");
             balances[user] -= fee;
@@ -90,6 +92,18 @@ contract AgentVault is EIP712, Ownable {
             cartelCore.raidFor(user, target);
             emit ActionExecuted(user, "raid", fee);
         } 
+        else if (keccak256(bytes(action)) == keccak256(bytes("highStakesRaid"))) {
+            address target = abi.decode(data, (address));
+            
+            // Get fee dynamically
+            uint256 fee = cartelCore.HIGH_STAKES_RAID_FEE();
+            
+            require(balances[user] >= fee, "Insufficient user balance for high stakes raid fee");
+            balances[user] -= fee;
+            
+            cartelCore.highStakesRaidFor(user, target);
+            emit ActionExecuted(user, "highStakesRaid", fee);
+        }
         else if (keccak256(bytes(action)) == keccak256(bytes("claim"))) {
              cartelCore.claimYieldFor(user);
              emit ActionExecuted(user, "claim", 0);

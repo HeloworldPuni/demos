@@ -9,7 +9,7 @@ contract CartelShares is ERC1155, Ownable {
     
     address public minter;
 
-    constructor() ERC1155("https://api.farcastercartel.com/metadata/{id}.json") Ownable(msg.sender) {
+    constructor() ERC1155("https://api.basecartel.in/metadata/{id}.json") Ownable(msg.sender) {
         // Initial minting logic can go here or be controlled by CartelCore
     }
 

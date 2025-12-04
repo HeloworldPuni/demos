@@ -97,7 +97,7 @@ export default function App() {
 
   return (
     <div className="pb-20">
-      {currentView === "dashboard" ? <CartelDashboard /> : <Leaderboard />}
+      {currentView === "dashboard" ? <CartelDashboard address={address} /> : <Leaderboard />}
 
       <div className="fixed bottom-0 left-0 right-0 bg-zinc-900 border-t border-zinc-800 p-4 flex justify-around z-50">
         <Button

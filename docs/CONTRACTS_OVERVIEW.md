@@ -37,19 +37,6 @@ This document provides a technical overview of the Base Cartel smart contract sy
 *   `join(address referrer)`
     *   **Public:** Main entry point. Mints initial shares, handles fees, and processes referrals.
 *   `getReferralCount(address user)`
-    *   **View:** Returns the number of successful referrals for a user.
-*   `distributeDailyProfits()`
-    *   **Public:** Calculates reward per share based on `dailyRevenuePool` and resets the pool. Callable once every 24 hours.
-*   `claimProfit()`
-    *   **Public:** Claims any pending profit share rewards for the caller.
-*   `claimProfitFor(address user)`
-    *   **Agent:** Claims profit share rewards on behalf of a user (for gasless/agent flows).
-*   `getPendingProfit(address user)`
-### Functions
-*   `setMinter(address _minter)`
-    *   **Admin:** Sets the address allowed to mint tokens.
-*   `mint(address account, uint256 amount, bytes memory data)`
-    *   **Minter Only:** Mints new shares to an account.
 *   `burn(address account, uint256 amount)`
     *   **Minter Only:** Burns shares from an account.
 *   `setURI(string memory newuri)`
