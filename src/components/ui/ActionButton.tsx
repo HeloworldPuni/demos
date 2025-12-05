@@ -1,6 +1,8 @@
-import { motion } from "framer-motion";
+"use client";
 
-interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+import { motion, HTMLMotionProps } from "framer-motion";
+
+interface ActionButtonProps extends HTMLMotionProps<"button"> {
     label?: string;
     variant: "raid" | "invite" | "betray" | "clan";
     children: React.ReactNode;
