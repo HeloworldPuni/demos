@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { BossBadge } from "@/components/ui/BossBadge";
 import { StatCard } from "@/components/ui/StatCard";
