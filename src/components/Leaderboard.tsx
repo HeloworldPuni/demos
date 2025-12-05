@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { RankRow } from "@/components/ui/RankRow";
 import { haptics } from "@/lib/haptics";
 import { getCartelTitle, getTitleTheme } from "@/lib/cartel-titles";
 
@@ -62,16 +63,17 @@ export default function Leaderboard() {
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            {players.map((player) => {
+                            {players.map((player, index) => {
                                 const title = getCartelTitle(player.rank, player.shares);
                                 const theme = getTitleTheme(title);
                                 const isTopThree = player.rank <= 3;
                                 const isTopTen = player.rank <= 10;
 
                                 return (
-                                    <div
+                                    <RankRow
                                         key={player.rank}
-                                        className={`p-3 rounded-lg border transition-all duration-300 ${player.rank === 1
+                                        index={index}
+                                        className={`p-3 border ${player.rank === 1
                                             ? "bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 border-[#D4AF37]/50 glow-gold"
                                             : player.rank === 2
                                                 ? "bg-gradient-to-r from-zinc-400/20 to-zinc-400/5 border-zinc-400/50"
@@ -124,7 +126,7 @@ export default function Leaderboard() {
                                                 </Button>
                                             )}
                                         </div>
-                                    </div>
+                                    </RankRow>
                                 );
                             })}
                         </div>

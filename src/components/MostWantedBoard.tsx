@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ThreatBar } from "@/components/ui/ThreatBar";
 
 interface ThreatEntry {
     rank: number;
@@ -72,24 +73,27 @@ export default function MostWantedBoard() {
                 ) : (
                     <div className="space-y-2">
                         {players.map((player) => (
-                            <div key={player.address} className="bg-zinc-950/50 p-2 rounded border border-zinc-800/50 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="text-lg font-black text-zinc-600 w-4 text-center">#{player.rank}</div>
-                                    <div>
-                                        <div className="text-sm font-bold text-zinc-200">
-                                            {player.handle ? `@${player.handle}` : formatAddress(player.address)}
-                                        </div>
-                                        <div className="text-[10px] text-zinc-500 flex gap-2">
-                                            <span>⚔️ {player.normalRaidsInitiated}</span>
-                                            <span>🔥 {player.highStakesRaidsInitiated}</span>
-                                            <span>🛡️ {player.timesRaided}</span>
+                            <div key={player.address} className="bg-zinc-950/50 p-2 rounded border border-zinc-800/50 flex flex-col gap-2">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-lg font-black text-zinc-600 w-4 text-center">#{player.rank}</div>
+                                        <div>
+                                            <div className="text-sm font-bold text-zinc-200">
+                                                {player.handle ? `@${player.handle}` : formatAddress(player.address)}
+                                            </div>
+                                            <div className="text-[10px] text-zinc-500 flex gap-2">
+                                                <span>⚔️ {player.normalRaidsInitiated}</span>
+                                                <span>🔥 {player.highStakesRaidsInitiated}</span>
+                                                <span>🛡️ {player.timesRaided}</span>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div className="text-right">
+                                        <div className="text-xs text-red-500 font-black">{player.threatScore}</div>
+                                        <div className="text-[9px] text-zinc-600 uppercase tracking-wider">Threat</div>
+                                    </div>
                                 </div>
-                                <div className="text-right">
-                                    <div className="text-xs text-red-500 font-black">{player.threatScore}</div>
-                                    <div className="text-[9px] text-zinc-600 uppercase tracking-wider">Threat</div>
-                                </div>
+                                <ThreatBar score={player.threatScore} />
                             </div>
                         ))}
                     </div>

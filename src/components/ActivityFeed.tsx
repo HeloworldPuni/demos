@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDistanceToNow } from 'date-fns';
 
@@ -69,45 +70,54 @@ export default function ActivityFeed() {
                 ) : events.length === 0 ? (
                     <div className="text-center text-zinc-500 text-xs py-4">No recent activity. Be the first!</div>
                 ) : (
-                    events.map((event) => (
-                        <div key={event.id} className="text-xs border-b border-zinc-800/50 pb-2 last:border-0 last:pb-0 animate-in fade-in slide-in-from-top-2 duration-500">
-                            <div className="flex justify-between items-start mb-1">
-                                <span className="text-lg mr-2">{getEventIcon(event.type)}</span>
-                                <div className="flex-1">
-                                    <p className="text-zinc-300 leading-tight">
-                                        {event.type === 'RAID' && (
-                                            <>
-                                                <span className="text-blue-400 font-bold">{formatAddress(event.attacker)}</span> raided <span className="text-red-400">{formatAddress(event.target)}</span> and stole <span className="text-green-400 font-bold">{event.stolenShares} shares</span>.
-                                            </>
-                                        )}
-                                        {event.type === 'HIGH_STAKES_RAID' && (
-                                            <>
-                                                <span className="text-red-500 font-bold">HIGH-STAKES:</span> <span className="text-blue-400 font-bold">{formatAddress(event.attacker)}</span> hit <span className="text-red-400">{formatAddress(event.target)}</span>! Stole <span className="text-green-400 font-bold">{event.stolenShares}</span>, burned <span className="text-orange-400">{event.selfPenaltyShares}</span>.
-                                            </>
-                                        )}
-                                        {event.type === 'RETIRE' && (
-                                            <>
-                                                <span className="text-zinc-500 font-bold">{formatAddress(event.user)}</span> retired. Cashed out <span className="text-green-400 font-bold">${event.payout} USDC</span>.
-                                            </>
-                                        )}
-                                    </p>
-                                    <div className="flex justify-between items-center mt-1">
-                                        <span className="text-[10px] text-zinc-600">
-                                            {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}
-                                        </span>
-                                        <a
-                                            href={`https://sepolia.basescan.org/tx/${event.txHash}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-[10px] text-zinc-700 hover:text-zinc-500 underline"
-                                        >
-                                            View Tx
-                                        </a>
+                    <AnimatePresence initial={false}>
+                        {events.map((event) => (
+                            <motion.div
+                                key={event.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                transition={{ duration: 0.3 }}
+                                className="text-xs border-b border-zinc-800/50 pb-2 last:border-0 last:pb-0"
+                            >
+                                <div className="flex justify-between items-start mb-1">
+                                    <span className="text-lg mr-2">{getEventIcon(event.type)}</span>
+                                    <div className="flex-1">
+                                        <p className="text-zinc-300 leading-tight">
+                                            {event.type === 'RAID' && (
+                                                <>
+                                                    <span className="text-blue-400 font-bold">{formatAddress(event.attacker)}</span> raided <span className="text-red-400">{formatAddress(event.target)}</span> and stole <span className="text-green-400 font-bold">{event.stolenShares} shares</span>.
+                                                </>
+                                            )}
+                                            {event.type === 'HIGH_STAKES_RAID' && (
+                                                <>
+                                                    <span className="text-red-500 font-bold">HIGH-STAKES:</span> <span className="text-blue-400 font-bold">{formatAddress(event.attacker)}</span> hit <span className="text-red-400">{formatAddress(event.target)}</span>! Stole <span className="text-green-400 font-bold">{event.stolenShares}</span>, burned <span className="text-orange-400">{event.selfPenaltyShares}</span>.
+                                                </>
+                                            )}
+                                            {event.type === 'RETIRE' && (
+                                                <>
+                                                    <span className="text-zinc-500 font-bold">{formatAddress(event.user)}</span> retired. Cashed out <span className="text-green-400 font-bold">${event.payout} USDC</span>.
+                                                </>
+                                            )}
+                                        </p>
+                                        <div className="flex justify-between items-center mt-1">
+                                            <span className="text-[10px] text-zinc-600">
+                                                {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}
+                                            </span>
+                                            <a
+                                                href={`https://sepolia.basescan.org/tx/${event.txHash}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-[10px] text-zinc-700 hover:text-zinc-500 underline"
+                                            >
+                                                View Tx
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    ))
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 )}
             </CardContent>
         </Card>

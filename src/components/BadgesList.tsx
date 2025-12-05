@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BadgeTile } from "@/components/ui/BadgeTile";
 
 
 interface BadgeItem {
@@ -28,19 +29,13 @@ export default function BadgesList() {
             <CardContent>
                 <div className="grid grid-cols-2 gap-3">
                     {MOCK_BADGES.map((badge) => (
-                        <div
-                            key={badge.id}
-                            className={`p-3 rounded-lg border ${badge.earned
-                                ? "bg-zinc-800 border-zinc-700"
-                                : "bg-zinc-950 border-zinc-900 opacity-50"
-                                }`}
-                        >
+                        <BadgeTile key={badge.id} unlocked={badge.earned}>
                             <div className="text-2xl mb-1">{badge.icon}</div>
                             <div className="font-bold text-sm text-zinc-200">{badge.name}</div>
                             <div className="text-xs text-zinc-500 leading-tight mt-1">
                                 {badge.description}
                             </div>
-                        </div>
+                        </BadgeTile>
                     ))}
                 </div>
             </CardContent>

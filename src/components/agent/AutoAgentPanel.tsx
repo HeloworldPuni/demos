@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from "framer-motion";
 import { useAccount, useWriteContract, useSignTypedData } from 'wagmi';
 import { parseEther } from 'viem';
 import { Button } from "@/components/ui/button";
@@ -146,43 +147,62 @@ export default function AutoAgentPanel() {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label className="text-zinc-400">Strategy</Label>
-                    <select
-                        value={strategy}
-                        onChange={(e) => setStrategy(e.target.value)}
-                        className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 text-white"
-                    >
-                        <option value="conservative">Conservative (Claim Only)</option>
-                        <option value="balanced">Balanced (Safe Raids)</option>
-                        <option value="aggressive">Aggressive (Active Raids)</option>
-                    </select>
-                </div>
+                <AnimatePresence>
+                    {enabled && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                            className="overflow-hidden"
+                        >
+                            <div className="space-y-4 pt-2">
+                                <div className="space-y-2">
+                                    <Label className="text-zinc-400">Strategy</Label>
+                                    <select
+                                        value={strategy}
+                                        onChange={(e) => setStrategy(e.target.value)}
+                                        className="w-full p-2 rounded bg-zinc-800 border border-zinc-700 text-white"
+                                    >
+                                        <option value="conservative">Conservative (Claim Only)</option>
+                                        <option value="balanced">Balanced (Safe Raids)</option>
+                                        <option value="aggressive">Aggressive (Active Raids)</option>
+                                    </select>
+                                </div>
 
-                <div className="space-y-2">
-                    <Label className="text-zinc-400">Daily Budget (USDC)</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            type="number"
-                            value={budget}
-                            onChange={(e) => setBudget(e.target.value)}
-                            className="bg-zinc-800 border-zinc-700 text-white"
-                        />
-                        <Button variant="outline" onClick={handleDeposit} disabled={isLoading}>
-                            Deposit
-                        </Button>
-                    </div>
-                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-zinc-400">Daily Budget (USDC)</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            type="number"
+                                            value={budget}
+                                            onChange={(e) => setBudget(e.target.value)}
+                                            className="bg-zinc-800 border-zinc-700 text-white"
+                                        />
+                                        <Button variant="outline" onClick={handleDeposit} disabled={isLoading}>
+                                            Deposit
+                                        </Button>
+                                    </div>
+                                </div>
 
-                {statusMsg && (
-                    <div className="text-sm text-yellow-400 p-2 bg-zinc-800 rounded">
-                        {statusMsg}
+                                {statusMsg && (
+                                    <div className="text-sm text-yellow-400 p-2 bg-zinc-800 rounded">
+                                        {statusMsg}
+                                    </div>
+                                )}
+
+                                <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white" onClick={handleSave} disabled={isLoading}>
+                                    {isLoading ? 'Processing...' : 'Save Configuration'}
+                                </Button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                {!enabled && (
+                    <div className="text-center text-zinc-500 text-sm py-2">
+                        Enable Auto-Agent to configure strategies.
                     </div>
                 )}
-
-                <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white" onClick={handleSave} disabled={isLoading}>
-                    {isLoading ? 'Processing...' : 'Save Configuration'}
-                </Button>
             </CardContent>
         </Card>
     );
