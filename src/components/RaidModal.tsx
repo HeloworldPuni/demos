@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { sdk } from "@farcaster/miniapp-sdk";
 import PaymentModal from "./PaymentModal";
 import { RAID_FEE, HIGH_STAKES_RAID_FEE, formatUSDC } from "@/lib/basePay";
-import { useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
 
 interface RaidModalProps {
@@ -25,6 +25,7 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
     const [isProcessing, setIsProcessing] = useState(false);
     const [showFlash, setShowFlash] = useState(false);
 
+    const { address } = useAccount();
     const { writeContractAsync } = useWriteContract();
 
     if (!isOpen) return null;
@@ -59,11 +60,25 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
             });
             console.log("Raid Tx:", hash);
 
+            // Record Event for News
+            fetch('/api/cartel/events/record', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    txHash: hash,
+                    type: raidType === 'normal' ? 'RAID' : 'HIGH_STAKES_RAID',
+                    attacker: address,
+                    target: targetAddress,
+                    stolenShares: 100, // Mock for now, or calculate
+                    selfPenaltyShares: raidType === 'high-stakes' ? 50 : 0
+                })
+            });
+
             // Optimistic success flow
             setTimeout(() => {
                 setResult('success');
-                setStolenAmount(0); // TODO: fetch from logs
-                setSelfPenalty(0);
+                setStolenAmount(100); // Mock for UI
+                setSelfPenalty(raidType === 'high-stakes' ? 50 : 0);
                 setStep('result');
                 setIsProcessing(false);
             }, 5000);

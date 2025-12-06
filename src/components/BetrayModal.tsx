@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useComposeCast } from "@coinbase/onchainkit/minikit";
-import { useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
 import CartelCoreABI from '@/lib/abi/CartelCore.json';
 
 interface BetrayModalProps {
@@ -15,6 +15,7 @@ interface BetrayModalProps {
 export default function BetrayModal({ isOpen, onClose }: BetrayModalProps) {
     const [step, setStep] = useState<'warn' | 'confirm' | 'betraying' | 'result'>('warn');
     const [payout, setPayout] = useState(0);
+    const { address } = useAccount();
     const { writeContractAsync } = useWriteContract();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { composeCast } = useComposeCast() as any;
@@ -33,11 +34,24 @@ export default function BetrayModal({ isOpen, onClose }: BetrayModalProps) {
             });
             console.log("Betray Tx:", hash);
 
+            // Record Event for News
+            fetch('/api/cartel/events/record', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    txHash: hash,
+                    type: 'RETIRE',
+                    attacker: address,
+                    user: address,
+                    payout: 1000 // Mock
+                })
+            });
+
             // Optimistic result
             setTimeout(() => {
                 // In reality we should fetch event logs to get exact payout.
                 // For now, we just indicate success.
-                setPayout(0); // TODO: fetch actual payout
+                setPayout(1000); // Mock
                 setStep('result');
             }, 5000);
         } catch (e) {
