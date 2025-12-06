@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { RankRow } from "@/components/ui/RankRow";
 import { haptics } from "@/lib/haptics";
 import { getCartelTitle, getTitleTheme } from "@/lib/cartel-titles";
+import MyClanModal from "./MyClanModal";
 
 interface Player {
     rank: number;
@@ -12,6 +13,7 @@ interface Player {
     shares: number;
     totalClaimed: number;
     fid?: number;
+    address: string;
 }
 
 import { useState, useEffect } from 'react';
@@ -19,6 +21,7 @@ import { useState, useEffect } from 'react';
 export default function Leaderboard() {
     const [players, setPlayers] = useState<Player[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchLeaderboard = async () => {
@@ -38,10 +41,10 @@ export default function Leaderboard() {
         fetchLeaderboard();
     }, []);
 
-    const handleViewProfile = async (fid?: number) => {
-        if (fid) {
+    const handleViewProfile = async (address?: string) => {
+        if (address) {
             await haptics.light();
-            console.log("View profile:", fid);
+            setSelectedPlayer(address);
         }
     };
 
@@ -117,16 +120,16 @@ export default function Leaderboard() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            {player.fid && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleViewProfile(player.fid)}
-                                                    className="text-xs h-7 border-[#4A87FF]/30 hover:border-[#4A87FF] hover:bg-[#4A87FF]/10 text-[#4A87FF]"
-                                                >
-                                                    View
-                                                </Button>
-                                            )}
+
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleViewProfile(player.address)}
+                                                className="text-xs h-7 border-[#4A87FF]/30 hover:border-[#4A87FF] hover:bg-[#4A87FF]/10 text-[#4A87FF]"
+                                            >
+                                                View
+                                            </Button>
+
                                         </div>
                                     </RankRow>
                                 );
@@ -141,6 +144,15 @@ export default function Leaderboard() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Profile Modal */}
+            {selectedPlayer && (
+                <MyClanModal
+                    isOpen={!!selectedPlayer}
+                    onClose={() => setSelectedPlayer(null)}
+                    address={selectedPlayer}
+                />
+            )}
         </div>
     );
 }
