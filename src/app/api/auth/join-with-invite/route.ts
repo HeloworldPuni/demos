@@ -98,7 +98,8 @@ export async function POST(request: Request) {
         return NextResponse.json({
             success: true,
             user: result.user,
-            invites: result.newInvites.map(i => i.code)
+            invites: result.newInvites.map(i => i.code),
+            referrerAddress: invite.creator?.walletAddress || "0x0000000000000000000000000000000000000000"
         });
 
     } catch (error) {

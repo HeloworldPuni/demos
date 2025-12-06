@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useComposeCast } from "@coinbase/onchainkit/minikit";
+import { useWriteContract } from 'wagmi';
+import CartelCoreABI from '@/lib/abi/CartelCore.json';
 
 interface BetrayModalProps {
     isOpen: boolean;
@@ -13,20 +15,38 @@ interface BetrayModalProps {
 export default function BetrayModal({ isOpen, onClose }: BetrayModalProps) {
     const [step, setStep] = useState<'warn' | 'confirm' | 'betraying' | 'result'>('warn');
     const [payout, setPayout] = useState(0);
+    const { writeContractAsync } = useWriteContract();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { composeCast } = useComposeCast() as any;
 
     if (!isOpen) return null;
 
-    const handleBetray = () => {
+    const handleBetray = async () => {
         setStep('betraying');
 
-        // Simulate betrayal logic
-        setTimeout(() => {
-            const amount = Math.floor(Math.random() * 1000) + 500;
-            setPayout(amount);
-            setStep('result');
-        }, 3000);
+        try {
+            const hash = await writeContractAsync({
+                address: process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`,
+                abi: CartelCoreABI,
+                functionName: 'retireFromCartel',
+                args: []
+            });
+            console.log("Betray Tx:", hash);
+
+            // Optimistic result
+            setTimeout(() => {
+                // In reality we should fetch event logs to get exact payout.
+                // For now, we just indicate success.
+                setPayout(0); // TODO: fetch actual payout
+                setStep('result');
+            }, 5000);
+        } catch (e) {
+            console.error("Betrayal Failed:", e);
+            // Revert state or show error
+            // For now, simple console log and close maybe?
+            // Or stay on verify step.
+            setStep('warn');
+        }
     };
 
     const handleShare = () => {

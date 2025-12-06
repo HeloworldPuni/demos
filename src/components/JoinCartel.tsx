@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import PaymentModal from "./PaymentModal";
 import { JOIN_FEE, formatUSDC } from "@/lib/basePay";
-import { useAccount, useConnect } from 'wagmi';
+import { JOIN_FEE, formatUSDC } from "@/lib/basePay";
+import { useAccount, useConnect, useWriteContract } from 'wagmi';
 import { useFrameContext } from "./providers/FrameProvider";
+import CartelCoreABI from '@/lib/abi/CartelCore.json';
 // Removed unused Avatar import
 
 interface JoinCartelProps {
@@ -64,10 +66,15 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
         setShowPayment(true);
     };
 
+    const { writeContractAsync } = useWriteContract();
+
+    // ... imports above
+
     const handleConfirmPayment = async () => {
         setIsProcessing(true);
 
         try {
+            // 1. Validate Invite & Get Referrer via API
             const response = await fetch('/api/auth/join-with-invite', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -81,24 +88,36 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
             const data = await response.json();
 
             if (!response.ok) {
-                // If user already exists, just proceed to dashboard
                 if (data.error === 'User already exists') {
-                    console.log("User already exists, proceeding to dashboard...");
+                    console.log("User already exists in DB, checking on-chain...");
+                    // Proceed to try on-chain join anyway, or skip if handled?
+                    // For now, we assume if in DB, they might need to mint if txn failed previously.
                 } else {
                     throw new Error(data.error || 'Failed to join');
                 }
             }
 
-            // Success
+            const referrer = data.referrerAddress;
+            if (!referrer) throw new Error("Referrer address missing");
+
+            // 2. Execute On-Chain Join (Mint Shares)
+            console.log("Minting shares on-chain...");
+            const hash = await writeContractAsync({
+                address: process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`,
+                abi: CartelCoreABI,
+                functionName: 'join',
+                args: [referrer]
+            });
+            console.log("Join txn submitted:", hash);
+
+            // 3. Success UI
             setIsProcessing(false);
             setShowPayment(false);
             setIsLoading(true);
 
-            // Store new invites in local storage or state if needed, 
-            // but for now just proceed to dashboard
             setTimeout(() => {
                 onJoin(inviteCode);
-            }, 1000);
+            }, 2000); // Wait bit longer for animation
 
         } catch (error) {
             console.error("Join failed:", error);

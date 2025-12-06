@@ -23,58 +23,121 @@ import { getCartelTitle } from "@/lib/cartel-titles";
 import MyClanModal from "./MyClanModal";
 import RaidHistoryModal from "./RaidHistoryModal";
 
+// Wagmi & Contracts
+import { useReadContracts, useWriteContract } from 'wagmi';
+import { formatUnits } from 'viem';
+import CartelCoreABI from '@/lib/abi/CartelCore.json';
+import CartelPotABI from '@/lib/abi/CartelPot.json';
+import CartelSharesABI from '@/lib/abi/CartelShares.json';
+
 interface CartelDashboardProps {
     address?: string;
 }
 
 export default function CartelDashboard({ address }: CartelDashboardProps) {
-    const [shares, setShares] = useState(100);
+    // --- OFF-CHAIN STATE (DB/Index) ---
     const [rank, setRank] = useState<number | null>(null);
-    const [potBalance] = useState(5432);
-    const [profitAmount, setProfitAmount] = useState(42);
-    const [dailyRevenue] = useState(180);
-    const [sharePercentage] = useState(2.5);
-    const [isClaiming, setIsClaiming] = useState(false);
     const [highStakesCount, setHighStakesCount] = useState(0);
 
+    // --- STATE UI (Modals) ---
+    const [isRaidModalOpen, setIsRaidModalOpen] = useState(false);
+    const [isBetrayModalOpen, setIsBetrayModalOpen] = useState(false);
+    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+    const [isMyClanModalOpen, setIsMyClanModalOpen] = useState(false);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [isClaiming, setIsClaiming] = useState(false);
+
+    // --- CONTRACT ADDRESSES ---
+    const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
+    const POT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`;
+    const SHARES_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_SHARES_ADDRESS as `0x${string}`;
+
+    // --- ON-CHAIN READS ---
+    const { data: contractData, refetch } = useReadContracts({
+        contracts: [
+            {
+                address: SHARES_ADDRESS,
+                abi: CartelSharesABI,
+                functionName: 'balanceOf',
+                args: [address, 1n] // 1n = Share ID
+            },
+            {
+                address: POT_ADDRESS,
+                abi: CartelPotABI,
+                functionName: 'getBalance',
+            },
+            {
+                address: CORE_ADDRESS,
+                abi: CartelCoreABI,
+                functionName: 'getPendingProfit',
+                args: [address]
+            },
+            {
+                address: CORE_ADDRESS,
+                abi: CartelCoreABI,
+                functionName: 'dailyRevenuePool',
+            },
+            {
+                address: SHARES_ADDRESS,
+                abi: CartelSharesABI,
+                functionName: 'totalSupply',
+                args: [1n]
+            }
+        ]
+    });
+
+    const shares = contractData?.[0]?.result ? Number(contractData[0].result) : 0;
+    const potBalance = contractData?.[1]?.result ? Number(formatUnits(contractData[1].result as bigint, 6)) : 0;
+    const profitAmount = contractData?.[2]?.result ? Number(formatUnits(contractData[2].result as bigint, 6)) : 0;
+    const dailyRevenue = contractData?.[3]?.result ? Number(formatUnits(contractData[3].result as bigint, 6)) : 0;
+    const totalShares = contractData?.[4]?.result ? Number(contractData[4].result) : 1;
+
+    const sharePercentage = totalShares > 0 ? (shares / totalShares) * 100 : 0;
+    const formattedPct = sharePercentage < 0.01 && sharePercentage > 0 ? "<0.01" : sharePercentage.toFixed(2);
+
+    // --- FETCH OFF-CHAIN DATA (Rank, Badges) ---
     useEffect(() => {
         if (address) {
             fetch(`/api/cartel/me/stats?address=${address}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.highStakesCount) setHighStakesCount(data.highStakesCount);
-                    if (data.shares) setShares(data.shares);
                     if (data.rank) setRank(data.rank);
                 })
                 .catch(err => console.error("Failed to fetch stats:", err));
         }
     }, [address]);
 
-    const getRiskBadge = () => {
-        if (highStakesCount >= 10) return "🔥 High-Stakes Addict";
-        if (highStakesCount >= 3) return "🔥 Risk Lover";
-        if (highStakesCount >= 1) return "🔥 Tried High-Stakes";
-        return null;
-    };
+    const { writeContractAsync } = useWriteContract();
 
-    const riskBadge = getRiskBadge();
-    const cartelTitle = getCartelTitle(rank, shares);
-
+    // --- CLAIM ACTION ---
     const handleClaim = async () => {
         await haptics.medium();
         setIsClaiming(true);
-        setTimeout(async () => {
-            setProfitAmount(0);
+
+        try {
+            const hash = await writeContractAsync({
+                address: CORE_ADDRESS,
+                abi: CartelCoreABI,
+                functionName: 'claimProfit',
+                args: []
+            });
+            console.log("Claim Tx:", hash);
+
+            // Assume success UI
+            setTimeout(async () => {
+                refetch(); // Refresh data
+                setIsClaiming(false);
+                await haptics.success();
+            }, 5000);
+
+        } catch (e) {
+            console.error("Claim Failed:", e);
             setIsClaiming(false);
-            await haptics.success();
-        }, 1500);
+        }
     };
 
-    const [isRaidModalOpen, setIsRaidModalOpen] = useState(false);
-    const [isBetrayModalOpen, setIsBetrayModalOpen] = useState(false);
-    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-    const [isMyClanModalOpen, setIsMyClanModalOpen] = useState(false);
-    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const cartelTitle = getCartelTitle(rank, shares);
 
     return (
         <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto">
@@ -102,7 +165,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                         <CardTitle className="text-xs text-zinc-400 font-normal">Cartel Pot</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-black text-neon-blue">${potBalance}</div>
+                        <div className="text-3xl font-black text-neon-blue">${potBalance.toLocaleString()}</div>
                         <p className="text-xs text-zinc-500 mt-1">💼 USDC</p>
                     </CardContent>
                 </StatCard>
@@ -114,7 +177,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     <CardTitle className="text-xs text-zinc-400 font-normal">Cartel Earnings</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-3xl font-black text-[#4FF0E6]">${dailyRevenue}</div>
+                    <div className="text-3xl font-black text-[#4FF0E6]">${dailyRevenue.toLocaleString()}</div>
                     <p className="text-xs text-zinc-500 mt-1">📊 Last 24h</p>
                 </CardContent>
             </StatCard>
@@ -130,11 +193,11 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 <CardContent className="space-y-4">
                     <div className="flex justify-between items-center">
                         <span className="text-zinc-400 text-sm">Claimable Now</span>
-                        <span className="text-2xl font-black text-[#3DFF72]">${profitAmount}</span>
+                        <span className="text-2xl font-black text-[#3DFF72]">${profitAmount.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
                         <span className="text-zinc-500">Your Empire Share</span>
-                        <span className="text-[#D4AF37] font-bold">{sharePercentage}%</span>
+                        <span className="text-[#D4AF37] font-bold">{formattedPct}%</span>
                     </div>
                     <ClaimButton
                         onClick={handleClaim}
@@ -235,6 +298,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 isOpen={isRaidModalOpen}
                 onClose={() => setIsRaidModalOpen(false)}
                 targetName="Random Rival"
+            // Ideally this target should come from somewhere
             />
 
             <BetrayModal

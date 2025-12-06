@@ -15,6 +15,12 @@ export default function App() {
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
   const [currentView, setCurrentView] = useState<"dashboard" | "leaderboard">("dashboard");
 
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   useEffect(() => {
     const checkStatus = async () => {
       if (!address) {
@@ -37,8 +43,20 @@ export default function App() {
       }
     };
 
-    checkStatus();
-  }, [address]);
+    if (isMounted) {
+      checkStatus();
+    }
+  }, [address, isMounted]);
+
+  // Prevent hydration mismatch by ensuring we match server render (not connected) initially
+  if (!isMounted) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center space-y-4">
+        <h1 className="text-2xl font-bold text-red-500">BASE CARTEL</h1>
+        <p className="text-zinc-400">Connect your wallet to enter the underworld.</p>
+      </div>
+    );
+  }
 
   if (!isConnected) {
     return (

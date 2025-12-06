@@ -134,6 +134,27 @@ export default function AutoAgentPanel() {
         }
     };
 
+    const [suggestion, setSuggestion] = useState<any>(null);
+
+    const handleGetSuggestion = async () => {
+        if (!address) return;
+        try {
+            setIsLoading(true);
+            setStatusMsg("Requesting paid raid suggestion...");
+
+            // Dynamically import to avoid server-side issues if any
+            const { getRaidSuggestion } = await import('@/lib/x402-client');
+            const result = await getRaidSuggestion(address);
+
+            setSuggestion(result);
+            setStatusMsg("Suggestion received!");
+        } catch (e) {
+            setStatusMsg("Suggestion failed: " + String(e));
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <Card className="w-full max-w-md mx-auto mt-4 bg-zinc-900 border-zinc-800">
             <CardHeader>
@@ -185,6 +206,27 @@ export default function AutoAgentPanel() {
                                             Deposit
                                         </Button>
                                     </div>
+                                </div>
+
+                                <div className="p-4 bg-zinc-800/50 rounded border border-zinc-700/50">
+                                    <Label className="text-zinc-400 mb-2 block">AI Intelligence (Paid)</Label>
+                                    <Button
+                                        variant="secondary"
+                                        className="w-full mb-2"
+                                        onClick={handleGetSuggestion}
+                                        disabled={isLoading}
+                                    >
+                                        Get Raid Suggestion ($0.005)
+                                    </Button>
+                                    {suggestion && (
+                                        <div className="text-xs text-zinc-300 bg-black/40 p-2 rounded">
+                                            <p>Target: <span className="text-red-400">{suggestion.targetHandle}</span></p>
+                                            <p>Est. Gain: <span className="text-green-400">{suggestion.estimatedGainShares.min}-{suggestion.estimatedGainShares.max} Shares</span></p>
+                                            <p>Confidence: <span className="text-blue-400">{suggestion.confidence}%</span></p>
+                                            <p>Risk: <span className="text-yellow-400">{suggestion.riskLevel}</span></p>
+                                            <p className="italic mt-1">"{suggestion.reason}"</p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {statusMsg && (

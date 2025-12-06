@@ -6,14 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { sdk } from "@farcaster/miniapp-sdk";
 import PaymentModal from "./PaymentModal";
 import { RAID_FEE, HIGH_STAKES_RAID_FEE, formatUSDC } from "@/lib/basePay";
+import { useWriteContract } from 'wagmi';
+import CartelCoreABI from '@/lib/abi/CartelCore.json';
 
 interface RaidModalProps {
     isOpen: boolean;
     onClose: () => void;
     targetName?: string;
+    targetAddress?: string; // New prop
 }
 
-export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival" }: RaidModalProps) {
+export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival", targetAddress = "0x0000000000000000000000000000000000000000" }: RaidModalProps) {
     const [step, setStep] = useState<'confirm' | 'high-stakes-warning' | 'payment' | 'raiding' | 'result'>('confirm');
     const [raidType, setRaidType] = useState<'normal' | 'high-stakes'>('normal');
     const [result, setResult] = useState<'success' | 'fail'>('success');
@@ -21,6 +24,8 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
     const [selfPenalty, setSelfPenalty] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const [showFlash, setShowFlash] = useState(false);
+
+    const { writeContractAsync } = useWriteContract();
 
     if (!isOpen) return null;
 
@@ -36,34 +41,39 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
         setStep('payment');
     };
 
-    const handleConfirmPayment = () => {
+    const handleConfirmPayment = async () => {
         setIsProcessing(true);
         setStep('raiding');
 
-        // Simulate payment + raid logic
-        setTimeout(() => {
-            const isSuccess = Math.random() > 0.3; // 70% success chance
+        try {
+            const CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
+            const functionName = raidType === 'normal' ? 'raid' : 'highStakesRaid';
 
-            let amount = 0;
-            let penalty = 0;
+            console.log(`Executing ${functionName} on ${targetAddress}...`);
 
-            if (isSuccess) {
-                if (raidType === 'normal') {
-                    amount = Math.floor(Math.random() * 50) + 10;
-                } else {
-                    amount = Math.floor(Math.random() * 150) + 50; // Higher reward
-                    penalty = Math.floor(Math.random() * 10); // Self penalty
-                    setShowFlash(true);
-                    setTimeout(() => setShowFlash(false), 1500);
-                }
-            }
+            const hash = await writeContractAsync({
+                address: CORE_ADDRESS,
+                abi: CartelCoreABI,
+                functionName: functionName,
+                args: [targetAddress]
+            });
+            console.log("Raid Tx:", hash);
 
-            setResult(isSuccess ? 'success' : 'fail');
-            setStolenAmount(amount);
-            setSelfPenalty(penalty);
+            // Optimistic success flow
+            setTimeout(() => {
+                setResult('success');
+                setStolenAmount(0); // TODO: fetch from logs
+                setSelfPenalty(0);
+                setStep('result');
+                setIsProcessing(false);
+            }, 5000);
+
+        } catch (e) {
+            console.error("Raid Failed:", e);
+            setResult('fail');
             setStep('result');
             setIsProcessing(false);
-        }, 3000);
+        }
     };
 
     const handleShare = () => {
@@ -279,4 +289,3 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
         </div>
     );
 }
-
