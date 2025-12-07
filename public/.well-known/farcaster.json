@@ -12,24 +12,24 @@
     "frame": {
         "version": "1",
         "name": "Base Cartel",
-        "iconUrl": "https://i.imgur.com/brcnijg.png",
+        "iconUrl": "https://basecartel.in/icon.png",
         "homeUrl": "https://www.basecartel.in",
-        "imageUrl": "https://i.imgur.com/2bsV8mV.png",
-        "splashImageUrl": "https://i.imgur.com/brcnijg.png",
+        "imageUrl": "https://basecartel.in/banner.png",
+        "splashImageUrl": "https://basecartel.in/icon.png",
         "splashBackgroundColor": "#000000",
         "description": "An onchain social strategy game on Base. Join the cartel, raid, betray, and earn yield.",
         "ogTitle": "Base Cartel",
         "ogDescription": "An onchain social strategy game on Base. Join the cartel, raid, betray, and earn yield.",
-        "ogImageUrl": "https://i.imgur.com/2bsV8mV.png",
+        "ogImageUrl": "https://basecartel.in/banner.png",
         "primaryCategory": "games",
         "subtitle": "Rule the Chain",
         "tagline": "Join the Syndicate",
         "screenshotUrls": [
-            "https://i.imgur.com/2bsV8mV.png",
-            "https://i.imgur.com/2bsV8mV.png",
-            "https://i.imgur.com/2bsV8mV.png"
+            "https://basecartel.in/banner.png",
+            "https://basecartel.in/banner.png",
+            "https://basecartel.in/banner.png"
         ],
-        "heroImageUrl": "https://i.imgur.com/2bsV8mV.png",
+        "heroImageUrl": "https://basecartel.in/banner.png",
         "webhookUrl": "https://www.basecartel.in/api/webhook",
         "requiredCapabilities": [
             "actions.ready",
