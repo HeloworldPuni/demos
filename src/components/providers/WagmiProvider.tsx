@@ -5,8 +5,31 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector";
 import { METADATA } from "../../lib/utils";
 
+// Define Basename Resolver Addresses (Official from Basenames docs)
+// Base Mainnet (8453)
+const baseWithEns = {
+  ...base,
+  contracts: {
+    ...base.contracts,
+    ensRegistry: {
+      address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e', // Standard Registry
+    },
+    // Universal Resolver for L2 - This is the key for wagmi useEnsName to resolve on L2
+    ensUniversalResolver: {
+      address: '0xC6d566A56A1aFf6508b41f6c45f4Cd8EE5D130bf', // L2 Resolver NameWrapper/Resolver
+      blockCreated: 24712949, // Optimization
+    },
+    // Multicall3 is needed for batching
+    multicall3: {
+      address: '0xcA11bde05977b3631167028862bE2a173976CA11',
+      blockCreated: 5022,
+    },
+  },
+};
+
 export const config = createConfig({
-  chains: [baseSepolia, base, optimism],
+  // Use our modified base chain definition
+  chains: [baseSepolia, baseWithEns, optimism],
   transports: {
     [base.id]: http(`https://api.developer.coinbase.com/rpc/v1/base/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
     [baseSepolia.id]: http(`https://api.developer.coinbase.com/rpc/v1/base-sepolia/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
@@ -17,13 +40,6 @@ export const config = createConfig({
     baseAccount({
       appName: METADATA.name,
       appLogoUrl: METADATA.iconImageUrl,
-      // Paymaster configuration for gasless transactions
-      // paymaster: {
-      //   url: process.env.NEXT_PUBLIC_BASE_PAY_PAYMASTER_URL || 'https://paymaster.base.org',
-      //   context: {
-      //     policyId: process.env.NEXT_PUBLIC_PAYMASTER_POLICY_ID,
-      //   },
-      // },
     }),
     coinbaseWallet({
       appName: METADATA.name,
