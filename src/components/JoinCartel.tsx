@@ -26,6 +26,7 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [showPayment, setShowPayment] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // Removed unused writeContract
     // const { writeContract, data: hash } = useWriteContract();
@@ -123,8 +124,9 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
         } catch (error) {
             console.error("Join failed:", error);
             setIsProcessing(false);
+            // Show error in modal instead of alert
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            alert("Failed to join: " + (error as any).message);
+            setErrorMessage((error as any).message || "Transaction failed");
         }
     };
 
@@ -226,8 +228,12 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                 amount={formatUSDC(JOIN_FEE)}
                 action="Join the Cartel"
                 onConfirm={handleConfirmPayment}
-                onCancel={() => setShowPayment(false)}
+                onCancel={() => {
+                    setShowPayment(false);
+                    setErrorMessage(null);
+                }}
                 isProcessing={isProcessing}
+                errorMessage={errorMessage}
             />
         </div>
     );

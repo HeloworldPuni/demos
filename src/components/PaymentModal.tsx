@@ -8,6 +8,7 @@ interface PaymentModalProps {
     onConfirm: () => void;
     onCancel: () => void;
     isProcessing?: boolean;
+    errorMessage?: string | null;
 }
 
 export default function PaymentModal({
@@ -16,7 +17,8 @@ export default function PaymentModal({
     action,
     onConfirm,
     onCancel,
-    isProcessing = false
+    isProcessing = false,
+    errorMessage
 }: PaymentModalProps) {
     if (!isOpen) return null;
 
@@ -70,6 +72,12 @@ export default function PaymentModal({
                             <div className="animate-spin text-4xl mb-4">💸</div>
                             <p className="text-zinc-400">Processing transaction...</p>
                             <p className="text-xs text-zinc-600 mt-2">Gas fees sponsored by Paymaster</p>
+                        </div>
+                    )}
+
+                    {errorMessage && (
+                        <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-lg text-red-500 text-sm text-center">
+                            {errorMessage}
                         </div>
                     )}
                 </CardContent>
