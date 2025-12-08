@@ -12,16 +12,16 @@ const baseWithEns = {
   contracts: {
     ...base.contracts,
     ensRegistry: {
-      address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e', // Standard Registry
+      address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e' as const, // Standard Registry
     },
     // Universal Resolver for L2 - This is the key for wagmi useEnsName to resolve on L2
     ensUniversalResolver: {
-      address: '0xC6d566A56A1aFf6508b41f6c45f4Cd8EE5D130bf', // L2 Resolver NameWrapper/Resolver
+      address: '0xC6d566A56A1aFf6508b41f6c45f4Cd8EE5D130bf' as const, // L2 Resolver NameWrapper/Resolver
       blockCreated: 24712949, // Optimization
     },
     // Multicall3 is needed for batching
     multicall3: {
-      address: '0xcA11bde05977b3631167028862bE2a173976CA11',
+      address: '0xcA11bde05977b3631167028862bE2a173976CA11' as const,
       blockCreated: 5022,
     },
   },
