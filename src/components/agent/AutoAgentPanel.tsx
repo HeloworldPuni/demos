@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { useAccount, useWriteContract, useSignTypedData } from 'wagmi';
-import { parseEther } from 'viem';
+import { useAccount, useWriteContract, useSignTypedData, useReadContract } from 'wagmi';
+import { parseEther, formatEther } from 'viem';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,20 @@ const AGENT_VAULT_ABI = [
         stateMutability: 'nonpayable',
         inputs: [{ name: 'amount', type: 'uint256' }],
         outputs: []
+    },
+    {
+        name: 'withdraw',
+        type: 'function',
+        stateMutability: 'nonpayable',
+        inputs: [{ name: 'amount', type: 'uint256' }],
+        outputs: []
+    },
+    {
+        name: 'balances',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: '', type: 'address' }],
+        outputs: [{ name: '', type: 'uint256' }]
     }
 ] as const;
 
@@ -38,6 +52,17 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
     const [isConfigured, setIsConfigured] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [statusMsg, setStatusMsg] = useState('');
+
+    // Read Vault Balance
+    const { data: vaultBalance, refetch: refetchBalance } = useReadContract({
+        address: AGENT_VAULT_ADDRESS,
+        abi: AGENT_VAULT_ABI,
+        functionName: 'balances',
+        args: [address as `0x${string}`],
+        query: {
+            enabled: !!address,
+        }
+    });
 
     useEffect(() => {
         if (address) {
@@ -66,8 +91,29 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                 args: [parseEther(budget)]
             });
             setStatusMsg("Deposit successful: " + hash);
+            refetchBalance();
         } catch (e) {
             setStatusMsg("Deposit failed: " + String(e));
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleWithdraw = async () => {
+        if (!vaultBalance || vaultBalance === 0n) return;
+        try {
+            setIsLoading(true);
+            setStatusMsg("Withdrawing funds...");
+            const hash = await writeContractAsync({
+                address: AGENT_VAULT_ADDRESS,
+                abi: AGENT_VAULT_ABI,
+                functionName: 'withdraw',
+                args: [vaultBalance] // Withdraw all for simplicity in this UI
+            });
+            setStatusMsg("Withdrawal successful. Funds returned.");
+            refetchBalance();
+        } catch (e) {
+            setStatusMsg("Withdrawal failed: " + String(e));
         } finally {
             setIsLoading(false);
         }
@@ -206,7 +252,7 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
     // --- FULL VIEW (Profile) ---
     return (
         <Card className="w-full bg-zinc-900 border-zinc-800">
-            <CardHeader>
+            <CardHeader className="pb-2">
                 <CardTitle className="flex items-center justify-between text-white">
                     <span>🤖 Strategy Control</span>
                     <Button
@@ -219,6 +265,27 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+                {/* Balance & Withdraw Section */}
+                <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 flex justify-between items-center">
+                    <div>
+                        <p className="text-xs text-zinc-500 uppercase font-bold">Vault Balance</p>
+                        <p className="text-xl font-mono text-[#4FF0E6]">
+                            {vaultBalance ? formatEther(vaultBalance) : '0.00'} <span className="text-xs text-zinc-600">USDC</span>
+                        </p>
+                    </div>
+                    {vaultBalance && vaultBalance > 0n && (
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            className="h-8 text-xs bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-900/50"
+                            onClick={handleWithdraw}
+                            disabled={isLoading}
+                        >
+                            Withdraw All
+                        </Button>
+                    )}
+                </div>
+
                 <AnimatePresence>
                     <motion.div
                         layout
@@ -238,18 +305,22 @@ export default function AutoAgentPanel({ compact = false }: AutoAgentPanelProps)
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-zinc-400">Daily Budget (USDC)</Label>
+                            <Label className="text-zinc-400">Daily Deposit (USDC)</Label>
                             <div className="flex gap-2">
                                 <Input
                                     type="number"
                                     value={budget}
                                     onChange={(e) => setBudget(e.target.value)}
+                                    placeholder="Amount to deposit"
                                     className="bg-zinc-800 border-zinc-700 text-white"
                                 />
                                 <Button variant="outline" onClick={handleDeposit} disabled={isLoading}>
                                     Deposit
                                 </Button>
                             </div>
+                            <p className="text-[10px] text-zinc-500">
+                                Depositing increases your Vault Balance. The Agent uses this balance for gas & action fees.
+                            </p>
                         </div>
 
                         <div className="p-4 bg-zinc-800/50 rounded border border-zinc-700/50">
