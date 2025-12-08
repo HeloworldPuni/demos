@@ -11,9 +11,7 @@ const baseWithEns = {
   ...base,
   contracts: {
     ...base.contracts,
-    // We rely on standard config or OnchainKit's internal resolution now
   },
-},
 };
 
 export const config = createConfig({
