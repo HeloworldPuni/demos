@@ -132,31 +132,32 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                         <CardTitle className="text-4xl font-black heading-font text-neon-blue mb-2">
                             ENTER THE CARTEL
                         </CardTitle>
-                        <div className="space-y-2">
-                            <label className="text-sm text-zinc-400 font-medium">Referral Code (Optional)</label>
-                            <input
-                                type="text"
-                                placeholder="BASE-XXXXXX"
-                                className="w-full bg-[#0B0E12] border-2 border-[#4A87FF]/30 rounded-lg p-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#4A87FF] focus:glow-blue transition-all"
-                                value={inviteCode}
-                                onChange={(e) => setInviteCode(e.target.value)}
-                            />
-                        </div>
+                        <>
+                            <div className="space-y-2">
+                                <label className="text-sm text-zinc-400 font-medium">Referral Code (Optional)</label>
+                                <input
+                                    type="text"
+                                    placeholder="BASE-XXXXXX"
+                                    className="w-full bg-[#0B0E12] border-2 border-[#4A87FF]/30 rounded-lg p-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#4A87FF] focus:glow-blue transition-all"
+                                    value={inviteCode}
+                                    onChange={(e) => setInviteCode(e.target.value)}
+                                />
+                            </div>
 
-                        <Button
-                            className="w-full bg-gradient-to-r from-[#4A87FF] to-[#4FF0E6] hover:from-[#5A97FF] hover:to-[#5FFFF6] text-white font-bold py-6 text-lg rounded-lg glow-blue transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={handleJoinClick}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? "Joining..." : "Join the Cartel"}
-                        </Button>
-                    </>
+                            <Button
+                                className="w-full bg-gradient-to-r from-[#4A87FF] to-[#4FF0E6] hover:from-[#5A97FF] hover:to-[#5FFFF6] text-white font-bold py-6 text-lg rounded-lg glow-blue transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={handleJoinClick}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? "Joining..." : "Join the Cartel"}
+                            </Button>
+                        </>
                     )}
 
-                    <p className="text-center text-xs text-zinc-600 mt-4">
-                        Open Access · Referrals earn bonus shares
-                    </p>
-                </CardContent>
+                        <p className="text-center text-xs text-zinc-600 mt-4">
+                            Open Access · Referrals earn bonus shares
+                        </p>
+                    </CardContent>
             </Card>
 
             <PaymentModal
