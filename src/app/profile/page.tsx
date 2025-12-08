@@ -11,20 +11,51 @@ import ReferralModal from "@/components/ReferralModal";
 import { useState, useEffect } from 'react';
 import { ClanSummary } from '@/lib/clan-service';
 
+import { useFrameContext } from "@/components/providers/FrameProvider";
+
 export default function ProfilePage() {
     const { address, isConnected } = useAccount();
     const { disconnect } = useDisconnect();
     const [isReferralOpen, setIsReferralOpen] = useState(false);
     const [referralStats, setReferralStats] = useState<ClanSummary | null>(null);
 
+    // Get Farcaster Context
+    const { context } = useFrameContext();
+    const user = context?.user;
+
     useEffect(() => {
-        if (address) {
-            fetch(`/api/cartel/invites/me?address=${address}`)
-                .then(res => res.json())
-                .then(data => setReferralStats(data))
-                .catch(err => console.error(err));
-        }
+        // ... existing useEffect
     }, [address]);
+
+    // ... render return ... 
+
+    // Inside CardContent:
+    <Identity
+        address={address}
+        className="bg-transparent border-none p-0 flex flex-row items-center gap-4"
+    >
+        {user?.pfpUrl ? (
+            // Farcaster Avatar
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.pfpUrl} alt="Profile" className="w-16 h-16 rounded-full border-2 border-[#4A87FF]" />
+        ) : (
+            <Avatar className="w-16 h-16 rounded-full border-2 border-[#4A87FF]" />
+        )}
+
+        <div className="flex flex-col">
+            {/* Priority: Farcaster Name -> Address Fallback */}
+            <div
+                className="font-bold text-lg heading-font"
+                style={{ color: '#FFFFFF', textShadow: '0 0 10px rgba(255,255,255,0.5)' }} // Force White
+            >
+                {user?.username ? `@${user.username}` : (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Member')}
+            </div>
+
+            <div className="text-xs text-zinc-500 font-mono">
+                {user?.fid ? `FID: ${user.fid}` : address}
+            </div>
+        </div>
+    </Identity>
 
     return (
         <AuthenticatedRoute>
