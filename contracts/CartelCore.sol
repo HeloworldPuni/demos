@@ -37,7 +37,7 @@ contract CartelCore is Ownable, ReentrancyGuard {
     mapping(uint256 => mapping(address => bool)) public retiredInSeason;
 
     // Invite System
-    bool public inviteOnly = true;
+    bool public inviteOnly = false; // Changed to false for open access
     uint256 public constant INITIAL_INVITES = 3;
     mapping(address => uint256) public invites;
 
@@ -55,6 +55,7 @@ contract CartelCore is Ownable, ReentrancyGuard {
     mapping(address => uint256) public pendingRewards;
 
     event Join(address indexed player, address indexed referrer, uint256 shares, uint256 fee);
+    event Referred(address indexed referrer, address indexed referred);
     event Raid(address indexed raider, address indexed target, uint256 amountStolen, bool success, uint256 fee);
     event Betrayal(address indexed traitor, uint256 amountStolen);
     event InvitesGranted(address indexed user, uint256 amount);
@@ -102,17 +103,15 @@ contract CartelCore is Ownable, ReentrancyGuard {
     function join(address referrer) external nonReentrant {
         require(sharesContract.balanceOf(msg.sender, 1) == 0, "Already joined");
 
-        // Invite Logic
+        // Invite Logic (Legacy support, generally open now)
         if (inviteOnly) {
             require(referrer != address(0), "Referrer required in invite-only mode");
             require(invites[referrer] > 0, "Referrer has no invites left");
-            
-            // Decrement referrer's invites
             invites[referrer]--;
-            
-            // Grant invites to new user
-            invites[msg.sender] = INITIAL_INVITES;
         }
+        
+        // Always grant invites to new user (if we ever turn it back on or use for other things)
+        invites[msg.sender] = INITIAL_INVITES;
 
         // Fee Logic
         if (JOIN_FEE > 0) {
@@ -124,13 +123,17 @@ contract CartelCore is Ownable, ReentrancyGuard {
         // Mint initial shares to the user
         sharesContract.mint(msg.sender, JOIN_SHARES, "");
         
-        // Track referral if valid
-        if (referrer != address(0) && referrer != msg.sender) {
+        // Referral Rewards Logic
+        if (referrer != address(0) && referrer != msg.sender && referredBy[msg.sender] == address(0)) {
+            // Register referral
             referredBy[msg.sender] = referrer;
             referralCount[referrer]++;
             
-            // Off-chain reward system is now used. 
-            // We do NOT mint on-chain shares to referrer anymore to prevent inflation.
+            // Mint REFERRAL_BONUS to the referrer
+            // Note: This adds inflation, monitor carefully.
+            sharesContract.mint(referrer, REFERRAL_BONUS, "");
+            
+            emit Referred(referrer, msg.sender);
         }
         
         // Mark user as participant for the current season

@@ -55,7 +55,7 @@ export default function MyClanModal({ isOpen, onClose, address }: MyClanModalPro
                                     <div className="text-2xl font-bold text-white">
                                         {summary.directInvitesUsed} <span className="text-zinc-500 text-sm">/ {summary.maxInvites}</span>
                                     </div>
-                                    <p className="text-xs text-zinc-500 uppercase tracking-wider mt-1">Invites Used</p>
+                                    <p className="text-xs text-zinc-500 uppercase tracking-wider mt-1">Total Referrals</p>
                                 </CardContent>
                             </Card>
                             <Card className="bg-zinc-900/50 border-zinc-800">
@@ -86,13 +86,30 @@ export default function MyClanModal({ isOpen, onClose, address }: MyClanModalPro
 
                         {/* Direct Invitees List */}
                         <div>
+                            <h3 className="text-sm font-bold text-zinc-400 mb-3 uppercase tracking-wider">Your Referral Link</h3>
+                            <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-800 mb-6 flex items-center justify-between gap-2">
+                                <code className="text-[#4A87FF] text-sm break-all font-mono">
+                                    {`https://basecartel.in?ref=${address}`}
+                                </code>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-[#4A87FF] text-[#4A87FF] hover:bg-[#4A87FF]/10 shrink-0"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(`https://basecartel.in?ref=${address}`);
+                                        // Just a simple alert for now, could use a toast
+                                        alert("Link copied!");
+                                    }}
+                                >
+                                    Copy
+                                </Button>
+                            </div>
+
                             <h3 className="text-sm font-bold text-zinc-400 mb-3 uppercase tracking-wider">Direct Recruits</h3>
                             {summary.directInvitees.length === 0 ? (
                                 <div className="text-center py-8 bg-zinc-900/30 rounded-lg border border-zinc-800 border-dashed">
                                     <p className="text-zinc-500 mb-2">You haven't recruited anyone yet.</p>
-                                    <Button variant="outline" className="border-[#4FF0E6] text-[#4FF0E6] hover:bg-[#4FF0E6]/10">
-                                        Generate Invite
-                                    </Button>
+                                    <p className="text-xs text-zinc-600">Share your link to earn bonus shares.</p>
                                 </div>
                             ) : (
                                 <ScrollArea className="h-[300px] pr-4">

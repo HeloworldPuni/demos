@@ -54,13 +54,9 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
     // Removed dead useEffect for transaction receipt as we use API now
 
     const handleJoinClick = () => {
-        if (!inviteCode) {
-            alert("Invite code required for Phase 1!");
-            return;
-        }
-        // Validate format (simple check)
-        if (!inviteCode.startsWith("BASE-")) {
-            alert("Invalid invite code! Must start with BASE-");
+        // Validation format check only if provided
+        if (inviteCode && !inviteCode.startsWith("BASE-")) {
+            alert("Invalid referral code format! Must start with BASE-");
             return;
         }
         setShowPayment(true);
@@ -136,113 +132,29 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                         <CardTitle className="text-4xl font-black heading-font text-neon-blue mb-2">
                             ENTER THE CARTEL
                         </CardTitle>
-                        <p className="text-sm text-[#D4AF37] font-medium tracking-wider">
-                            INVITE-ONLY ACCESS
-                        </p>
-                    </div>
-                    {isInMiniApp && context?.user && (
-                        <div className="flex flex-col items-center gap-2 mt-4 animate-fade-in">
-                            {context.user.pfpUrl && (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={context.user.pfpUrl} alt="Profile" className="w-16 h-16 rounded-full border-2 border-[#4A87FF] glow-blue" />
-                            )}
-                            <p className="text-zinc-300 font-medium">
-                                Welcome, <span className="text-[#4A87FF]">@{context.user.username}</span>
-                            </p>
+                        <div className="space-y-2">
+                            <label className="text-sm text-zinc-400 font-medium">Referral Code (Optional)</label>
+                            <input
+                                type="text"
+                                placeholder="BASE-XXXXXX"
+                                className="w-full bg-[#0B0E12] border-2 border-[#4A87FF]/30 rounded-lg p-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#4A87FF] focus:glow-blue transition-all"
+                                value={inviteCode}
+                                onChange={(e) => setInviteCode(e.target.value)}
+                            />
                         </div>
-                    )}
-                </CardHeader>
-                <CardContent className="space-y-6 px-6 pb-8">
-                    <p className="text-center text-zinc-400 text-sm leading-relaxed">
-                        Base Cartel is invite-only during this phase. Enter your code to get in.
-                    </p>
 
-                    <div className="card-glow p-5 rounded-xl space-y-3">
-                        <div className="flex justify-between text-sm items-center">
-                            <span className="text-zinc-400">Entry Fee</span>
-                            <span className="text-[#3DFF72] font-bold text-lg">FREE</span>
-                        </div>
-                        <div className="h-px bg-gradient-to-r from-transparent via-[#4A87FF]/20 to-transparent"></div>
-                        <div className="flex justify-between text-sm items-center">
-                            <span className="text-zinc-400">Initial Shares</span>
-                            <span className="text-white font-bold text-lg">100</span>
-                        </div>
-                        <div className="h-px bg-gradient-to-r from-transparent via-[#4A87FF]/20 to-transparent"></div>
-                        <div className="flex justify-between text-sm items-center">
-                            <span className="text-zinc-400">Profit Share</span>
-                            <span className="text-[#4FF0E6] font-bold">Enabled ✓</span>
-                        </div>
-                        <div className="h-px bg-gradient-to-r from-transparent via-[#4A87FF]/20 to-transparent"></div>
-                        <div className="flex justify-between text-sm items-center">
-                            <span className="text-zinc-400">Gas Fees</span>
-                            <span className="text-[#4FF0E6] font-bold">Sponsored ✨</span>
-                        </div>
-                    </div>
-
-                    {!isConnected ? (
-                        <div className="space-y-4">
-                            <p className="text-center text-sm text-zinc-400">
-                                {isInMiniApp ? "Connecting to your account..." : "Connect your wallet to verify eligibility."}
-                            </p>
-                            {!isInMiniApp && (
-                                <Button
-                                    className="w-full bg-[#4A87FF] hover:bg-[#5A97FF] text-white font-bold py-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
-                                    onClick={() => {
-                                        const connector = connectors.find(c => c.id === 'coinbaseWalletSDK');
-                                        if (connector) {
-                                            connect({ connector });
-                                        } else {
-                                            // Fallback to first available if coinbase not found
-                                            const first = connectors[0];
-                                            if (first) connect({ connector: first });
-                                        }
-                                    }}
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        className="h-6 w-6"
-                                    >
-                                        <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" />
-                                        <path d="M4 6v12c0 1.1.9 2 2 2h14v-4" />
-                                        <path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" />
-                                    </svg>
-                                    Connect Wallet
-                                </Button>
-                            )}
-                        </div>
-                    ) : (
-                        <>
-                            <div className="space-y-2">
-                                <label className="text-sm text-zinc-400 font-medium">Invite Code (Required)</label>
-                                <input
-                                    type="text"
-                                    placeholder="BASE-XXXXXX"
-                                    className="w-full bg-[#0B0E12] border-2 border-[#4A87FF]/30 rounded-lg p-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#4A87FF] focus:glow-blue transition-all"
-                                    value={inviteCode}
-                                    onChange={(e) => setInviteCode(e.target.value)}
-                                />
-                            </div>
-
-                            <Button
-                                className="w-full bg-gradient-to-r from-[#4A87FF] to-[#4FF0E6] hover:from-[#5A97FF] hover:to-[#5FFFF6] text-white font-bold py-6 text-lg rounded-lg glow-blue transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                onClick={handleJoinClick}
-                                disabled={isLoading || !inviteCode}
-                            >
-                                {isLoading ? "Joining..." : "Join the Cartel"}
-                            </Button>
-                        </>
+                        <Button
+                            className="w-full bg-gradient-to-r from-[#4A87FF] to-[#4FF0E6] hover:from-[#5A97FF] hover:to-[#5FFFF6] text-white font-bold py-6 text-lg rounded-lg glow-blue transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleJoinClick}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? "Joining..." : "Join the Cartel"}
+                        </Button>
+                    </>
                     )}
 
                     <p className="text-center text-xs text-zinc-600 mt-4">
-                        Phase 1: Invite-Only Access
+                        Open Access · Referrals earn bonus shares
                     </p>
                 </CardContent>
             </Card>

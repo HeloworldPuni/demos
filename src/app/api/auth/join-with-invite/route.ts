@@ -7,8 +7,8 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { walletAddress, farcasterId, inviteCode } = body;
 
-        if (!walletAddress || !inviteCode) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        if (!walletAddress) {
+            return NextResponse.json({ error: 'Missing wallet address' }, { status: 400 });
         }
 
         // 1. Check if user already exists
@@ -25,23 +25,21 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'User already exists' }, { status: 409 });
         }
 
-        // 2. Validate invite code
-        const invite = await prisma.invite.findUnique({
-            where: { code: inviteCode },
-            include: { creator: true }
-        });
+        // 2. Resolve Invite / Referrer (Optional)
+        let validInvite = null;
+        if (inviteCode) {
+            const invite = await prisma.invite.findUnique({
+                where: { code: inviteCode },
+                include: { creator: true }
+            });
 
-        if (!invite) {
-            return NextResponse.json({ error: 'Invalid invite code' }, { status: 404 });
+            // Soft validation: Only use invite if valid and unused. Ignore otherwise.
+            if (invite && (invite.status === 'unused' || invite.maxUses > invite.usedCount)) {
+                validInvite = invite;
+            }
         }
 
-        if (invite.status !== 'unused' && invite.usedCount >= invite.maxUses) {
-            return NextResponse.json({ error: 'Invite already used' }, { status: 400 });
-        }
-
-
-
-        // 3. Create User, Update Invite, Create Referrals, Generate New Invites
+        // 3. Create User, Update Invite (if valid), Create Referral (if valid)
         const result = await prisma.$transaction(async (tx) => {
             // Create User
             const newUser = await tx.user.create({
@@ -51,55 +49,72 @@ export async function POST(request: Request) {
                 }
             });
 
-            // Update Invite
-            const newUsedCount = invite.usedCount + 1;
-            const newStatus = newUsedCount >= invite.maxUses ? 'used' : 'unused';
+            // Handle Referral Logic if invite was valid
+            if (validInvite) {
+                const newUsedCount = validInvite.usedCount + 1;
+                const newStatus = newUsedCount >= validInvite.maxUses ? 'used' : 'unused';
 
-            await tx.invite.update({
-                where: { id: invite.id },
-                data: {
-                    usedCount: { increment: 1 },
-                    status: newStatus
-                }
-            });
-
-            // Create Referral Record
-            if (invite.creatorId) {
-                await tx.referral.create({
+                await tx.invite.update({
+                    where: { id: validInvite.id },
                     data: {
-                        referrerId: invite.creatorId,
-                        refereeId: newUser.id,
-                        inviteId: invite.id,
-                        isRewardable: invite.type !== 'founder' // Exclude founder invites from rewards
+                        usedCount: { increment: 1 },
+                        status: newStatus
                     }
                 });
+
+                if (validInvite.creatorId) {
+                    // Create legacy Referral record (ID based)
+                    await tx.referral.create({
+                        data: {
+                            referrerId: validInvite.creatorId,
+                            refereeId: newUser.id,
+                            inviteId: validInvite.id,
+                            isRewardable: validInvite.type !== 'founder'
+                        }
+                    });
+
+                    // Create CartelReferral record (Address based) for Clan UI
+                    // We need referrer's address. invalidInvite.creator is included in the findUnique above?
+                    // Yes, include: { creator: true }
+                    if (validInvite.creator?.walletAddress) {
+                        await tx.cartelReferral.create({
+                            data: {
+                                userAddress: walletAddress,
+                                referrerAddress: validInvite.creator.walletAddress,
+                                season: 1
+                            }
+                        });
+                    }
+                }
             }
 
-            // Generate 3 new invites for the new user
+            // Generate 3 new INVITES for the new user (now Referral Codes)
             const newInvites = [];
             for (let i = 0; i < 3; i++) {
                 newInvites.push({
                     code: 'BASE-' + uuidv4().substring(0, 6).toUpperCase(),
                     creatorId: newUser.id,
                     type: 'user',
-                    maxUses: 1,
+                    maxUses: 1000, // Effectively unlimited now, treating as referral code
                     status: 'unused'
                 });
             }
 
-            // SQLite doesn't support createMany, so we map
+            // SQLite / Postgres createMany handling
+            // Since we moved to Postgres, createMany is available but safely keeping loop for now or switching if confirmed.
+            // Keeping loop for safety as provider switch might be fresh.
             for (const inv of newInvites) {
                 await tx.invite.create({ data: inv });
             }
 
-            return { user: newUser, newInvites };
+            return { user: newUser, newInvites, referrer: validInvite?.creator };
         });
 
         return NextResponse.json({
             success: true,
             user: result.user,
             invites: result.newInvites.map(i => i.code),
-            referrerAddress: invite.creator?.walletAddress || "0x0000000000000000000000000000000000000000"
+            referrerAddress: result.referrer?.walletAddress || "0x0000000000000000000000000000000000000000"
         });
 
     } catch (error) {
