@@ -94,8 +94,9 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                 }
             }
 
-            const referrer = data.referrerAddress;
-            if (!referrer) throw new Error("Referrer address missing");
+            // Default to Zero Address if API returns null (Open Access mode)
+            const referrer = data.referrerAddress || "0x0000000000000000000000000000000000000000";
+            // if (!referrer) throw new Error("Referrer address missing"); // Removed strict check
 
             const contractAddress = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`;
             if (!contractAddress) {
