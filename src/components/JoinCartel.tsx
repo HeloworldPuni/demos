@@ -131,9 +131,10 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                         <div className="text-6xl mb-4">🎩</div>
                         <CardTitle className="text-4xl font-black heading-font text-neon-blue mb-2">
                             ENTER THE CARTEL
-                            <p className="text-sm text-[#D4AF37] font-medium tracking-wider">
-                                INVITE-ONLY ACCESS
-                            </p>
+                        </CardTitle>
+                        <p className="text-sm text-[#D4AF37] font-medium tracking-wider">
+                            INVITE-ONLY ACCESS
+                        </p>
                     </div>
                     {isInMiniApp && context?.user && (
                         <div className="flex flex-col items-center gap-2 mt-4 animate-fade-in">
