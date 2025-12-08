@@ -67,6 +67,7 @@
     "hardhat": "^2.22.0",
     "hardhat-gas-reporter": "^2.3.0",
     "postcss": "^8",
+    "postcss-import": "^16.1.1",
     "prisma": "^5.10.0",
     "solidity-coverage": "^0.8.16",
     "tailwindcss": "^3.4.1",
