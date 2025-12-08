@@ -11,35 +11,46 @@ const baseWithEns = {
   ...base,
   contracts: {
     ...base.contracts,
-  },
-};
+    ensRegistry: {
+      address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e' as const,
+    },
+    // Universal Resolver for L2 (Basenames) - CHECKSUM VERIFIED
+    ensUniversalResolver: {
+      address: '0xC6D566A56A1aFF6508b41F6C45F4CD8EE5d130BF' as const,
+      blockCreated: 24712949,
+    },
+    multicall3: {
+      address: '0xcA11bde05977b3631167028862bE2a173976CA11' as const,
+      blockCreated: 5022,
+    },
+  };
 
-export const config = createConfig({
-  // Use our modified base chain definition
-  chains: [baseSepolia, baseWithEns, optimism],
-  transports: {
-    [base.id]: http(`https://api.developer.coinbase.com/rpc/v1/base/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
-    [baseSepolia.id]: http(`https://api.developer.coinbase.com/rpc/v1/base-sepolia/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
-    [optimism.id]: http(),
-  },
-  connectors: [
-    farcasterMiniApp(),
-    baseAccount({
-      appName: METADATA.name,
-      appLogoUrl: METADATA.iconImageUrl,
-    }),
-    coinbaseWallet({
-      appName: METADATA.name,
-    }),
-  ],
-});
+  export const config = createConfig({
+    // Use our modified base chain definition
+    chains: [baseSepolia, baseWithEns, optimism],
+    transports: {
+      [base.id]: http(`https://api.developer.coinbase.com/rpc/v1/base/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
+      [baseSepolia.id]: http(`https://api.developer.coinbase.com/rpc/v1/base-sepolia/${process.env.NEXT_PUBLIC_CDP_API_KEY}`),
+      [optimism.id]: http(),
+    },
+    connectors: [
+      farcasterMiniApp(),
+      baseAccount({
+        appName: METADATA.name,
+        appLogoUrl: METADATA.iconImageUrl,
+      }),
+      coinbaseWallet({
+        appName: METADATA.name,
+      }),
+    ],
+  });
 
-const queryClient = new QueryClient();
+  const queryClient = new QueryClient();
 
-export default function Provider({ children }: { children: React.ReactNode }) {
-  return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </WagmiProvider>
-  );
+  export default function Provider({ children }: { children: React.ReactNode }) {
+    return (
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </WagmiProvider>
+    );
 }
