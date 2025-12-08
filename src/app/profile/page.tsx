@@ -1,7 +1,6 @@
 "use client";
 
-import { useAccount, useDisconnect } from 'wagmi';
-import { Identity, Avatar, Name, Address } from '@coinbase/onchainkit/identity';
+import { useAccount, useDisconnect, useEnsName, useEnsAvatar } from 'wagmi';
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -16,12 +15,29 @@ export default function ProfilePage() {
     const { address } = useAccount();
     const { disconnect } = useDisconnect();
 
+    // 1. Try standard ENS resolution (No custom config to avoid crashes)
+    const { data: ensName } = useEnsName({ address, chainId: 8453 });
+    const { data: ensAvatar } = useEnsAvatar({ name: ensName || undefined, chainId: 8453 });
+
     const [isReferralOpen, setIsReferralOpen] = useState(false);
     const [referralStats, setReferralStats] = useState<ClanSummary | null>(null);
 
-    // Get Farcaster Context
+    // 2. Try Farcaster Context (Worked for user on mobile)
     const { context } = useFrameContext();
     const user = context?.user;
+
+    // 3. Determine Final Display Data (Priority: Farcaster -> ENS -> Address)
+    const displayName = user?.username
+        ? `@${user.username}`
+        : (ensName || (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Member'));
+
+    // Avatar Priority: Farcaster -> ENS -> Default Placeholder
+    const displayAvatar = user?.pfpUrl || ensAvatar;
+
+    // Subtext: FID -> Full Address
+    const displaySubtext = user?.fid
+        ? `FID: ${user.fid}`
+        : address;
 
     useEffect(() => {
         if (address) {
@@ -51,29 +67,34 @@ export default function ProfilePage() {
                         </Button>
                     </header>
 
-                    {/* Identity Card */}
+                    {/* Identity Card - FULL MANUAL CONTROL */}
                     <Card className="card-glow border-zinc-700">
                         <CardContent className="p-4 flex items-center gap-4">
-                            {/* Force White Text for OnchainKit Components */}
                             <div className="flex flex-row items-center gap-4 w-full">
-                                <div className="p-1 border-2 border-[#4A87FF] rounded-full">
-                                    <Identity
-                                        address={address}
-                                        schemaId="0xf8b05c79f090979bf4a80270aba232dff11a10d9ca55c4f88de95317970f0de9"
-                                        className="flex items-center gap-4"
-                                    >
-                                        <Avatar className="h-16 w-16" />
-                                        <div className="flex flex-col">
-                                            {/* Name with enforced white color and massive glow */}
-                                            <Name
-                                                className="font-bold text-lg heading-font text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]"
-                                            />
-                                            {/* Subtext address */}
-                                            <Address
-                                                className="text-xs text-zinc-400 font-mono"
-                                            />
+                                {/* Avatar Section */}
+                                <div className="p-1 border-2 border-[#4A87FF] rounded-full shrink-0">
+                                    {displayAvatar ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={displayAvatar}
+                                            alt="Profile"
+                                            className="w-16 h-16 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center">
+                                            <span className="text-2xl">👤</span>
                                         </div>
-                                    </Identity>
+                                    )}
+                                </div>
+
+                                {/* Text Section */}
+                                <div className="flex flex-col min-w-0">
+                                    <div className="font-bold text-lg heading-font text-white truncate drop-shadow-md">
+                                        {displayName}
+                                    </div>
+                                    <div className="text-xs text-zinc-400 font-mono truncate">
+                                        {displaySubtext}
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
