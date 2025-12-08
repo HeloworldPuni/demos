@@ -50,10 +50,14 @@ export default function App() {
 
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center space-y-4">
-        <h1 className="text-2xl font-bold text-red-500">BASE CARTEL</h1>
-        <p className="text-zinc-400">Connect your wallet to enter the underworld.</p>
-      </div>
+      <JoinCartel onJoin={(inviteCode) => {
+        console.log("Joined!", inviteCode);
+        if (address) {
+          localStorage.setItem(`cartel_joined_${address}`, 'true');
+        }
+        setHasJoined(true);
+        router.push('/dashboard');
+      }} />
     );
   }
 
