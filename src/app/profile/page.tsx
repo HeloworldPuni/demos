@@ -54,14 +54,15 @@ export default function ProfilePage() {
                             >
                                 <Avatar className="w-16 h-16 rounded-full border-2 border-[#4A87FF]" />
                                 <div className="flex flex-col">
-                                    <Name className="font-bold text-white text-lg" />
-                                    <Address className="text-xs text-zinc-500 font-mono" />
+                                    {/* Manual Fallback for Name/Address since OnchainKit components are hidden */}
+                                    <div className="font-bold text-white text-lg heading-font">
+                                        {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Member'}
+                                    </div>
+                                    <div className="text-xs text-zinc-500 font-mono">
+                                        {address}
+                                    </div>
                                 </div>
                             </Identity>
-                            {/* Fallback Debug Info - VISIBLE this time */}
-                            <div className="text-xs text-red-500 mt-2 font-mono">
-                                Debug: Address={address} | Connected={isConnected ? 'Yes' : 'No'}
-                            </div>
                         </CardContent>
                     </Card>
 
