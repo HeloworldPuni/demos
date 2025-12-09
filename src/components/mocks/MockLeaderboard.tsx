@@ -17,6 +17,7 @@ const MOCK_PLAYERS = [
     { rank: 7, name: "Corleone", shares: 300, totalClaimed: 5200, address: "0x7" },
     { rank: 8, name: "Heisenberg", shares: 250, totalClaimed: 3100, address: "0x8" },
     { rank: 9, name: "Capone", shares: 200, totalClaimed: 1200, address: "0x9" },
+];
 
 export default function MockLeaderboard() {
     return (
