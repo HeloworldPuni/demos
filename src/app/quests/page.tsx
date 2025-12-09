@@ -2,8 +2,7 @@
 
 import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import AppLayout from '@/components/AppLayout';
-import AuthenticatedRoute from '@/components/AuthenticatedRoute';
-import AppLayout from '@/components/AppLayout';
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
