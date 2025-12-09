@@ -4,12 +4,19 @@ import AuthenticatedRoute from '@/components/AuthenticatedRoute';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { fadeUp, slideLeft, scaleHover, scaleTap } from "@/components/motion/variants";
 
 export default function QuestsPage() {
     return (
         <AuthenticatedRoute>
             <AppLayout>
-                <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto">
+                <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={fadeUp}
+                    className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto"
+                >
                     <header className="pt-2">
                         <h1 className="text-2xl font-black heading-font text-neon-blue">QUESTS</h1>
                         <p className="text-sm text-zinc-400">Complete challenges to earn reputation</p>
@@ -24,27 +31,34 @@ export default function QuestsPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="space-y-3">
+                            <motion.div
+                                className="space-y-3"
+                                initial="hidden"
+                                animate="visible"
+                            >
                                 <QuestItem
                                     title="Raid a Rival"
                                     reward="10 Rep"
                                     progress={1}
                                     total={1}
                                     completed={true}
+                                    delay={0}
                                 />
                                 <QuestItem
                                     title="Claim Profit"
                                     reward="5 Rep"
                                     progress={0}
                                     total={1}
+                                    delay={0.1}
                                 />
                                 <QuestItem
                                     title="Recruit an Associate"
                                     reward="20 Shares"
                                     progress={0}
                                     total={1}
+                                    delay={0.2}
                                 />
-                            </div>
+                            </motion.div>
                         </CardContent>
                     </Card>
 
@@ -54,42 +68,56 @@ export default function QuestsPage() {
                             <CardTitle className="text-lg heading-font text-white">Weekly Syndicate</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="space-y-3">
+                            <motion.div
+                                className="space-y-3"
+                                initial="hidden"
+                                animate="visible"
+                            >
                                 <QuestItem
                                     title="Execute 5 Raids"
                                     reward="50 Shares"
                                     progress={3}
                                     total={5}
+                                    delay={0.3}
                                 />
                                 <QuestItem
                                     title="Go High-Stakes"
                                     reward="100 Rep"
                                     progress={0}
                                     total={1}
+                                    delay={0.4}
                                 />
-                            </div>
+                            </motion.div>
                         </CardContent>
                     </Card>
-                </div>
+                </motion.div>
             </AppLayout>
         </AuthenticatedRoute>
     );
 }
 
-function QuestItem({ title, reward, progress, total, completed = false }: any) {
+function QuestItem({ title, reward, progress, total, completed = false, delay = 0 }: any) {
     const pct = (progress / total) * 100;
 
     return (
-        <div className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl border border-zinc-800">
+        <motion.div
+            variants={slideLeft}
+            transition={{ delay, duration: 0.3 }}
+            whileHover="hover"
+            whileTap="tap"
+            className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl border border-zinc-800"
+        >
             <div className="flex-1 mr-4">
                 <div className="flex justify-between mb-1">
                     <span className={completed ? "text-zinc-500 line-through" : "text-zinc-200 font-medium"}>{title}</span>
                     <span className="text-xs text-[#D4AF37] font-bold">{reward}</span>
                 </div>
                 <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <div
+                    <motion.div
                         className={`h-full ${completed ? "bg-[#3DFF72]" : "bg-[#4A87FF]"}`}
-                        style={{ width: `${pct}%` }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${pct}%` }}
+                        transition={{ duration: 0.6, delay: delay + 0.2 }}
                     />
                 </div>
             </div>
@@ -100,6 +128,6 @@ function QuestItem({ title, reward, progress, total, completed = false }: any) {
                     <div className="text-zinc-500 text-xs font-mono">{progress}/{total}</div>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 }

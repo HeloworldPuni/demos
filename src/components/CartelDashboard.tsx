@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from "framer-motion";
+import { fadeUp, scaleHover, scaleTap } from "@/components/motion/variants";
 import { BossBadge } from "@/components/ui/BossBadge";
 import { StatCard } from "@/components/ui/StatCard";
 import { ClaimButton } from "@/components/ui/ClaimButton";
@@ -151,102 +153,126 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-4">
-                <StatCard className="card-glow border-[#D4AF37]/30">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-xs text-zinc-400 font-normal">Your Shares</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-black text-gold-gradient">{shares}</div>
-                        <p className="text-xs text-zinc-500 mt-1">🔐 Vault</p>
-                    </CardContent>
-                </StatCard>
-                <StatCard className="card-glow border-[#4A87FF]/30">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-xs text-zinc-400 font-normal">Cartel Pot</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-black text-neon-blue">${potBalance.toLocaleString()}</div>
-                        <p className="text-xs text-zinc-500 mt-1">💼 USDC</p>
-                    </CardContent>
-                </StatCard>
+                <motion.div variants={fadeUp} whileHover="hover" whileTap="tap">
+                    <StatCard className="card-glow border-[#D4AF37]/30 h-full">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-xs text-zinc-400 font-normal">Your Shares</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-black text-gold-gradient">{shares}</div>
+                            <p className="text-xs text-zinc-500 mt-1">🔐 Vault</p>
+                        </CardContent>
+                    </StatCard>
+                </motion.div>
+                <motion.div variants={fadeUp} whileHover="hover" whileTap="tap">
+                    <StatCard className="card-glow border-[#4A87FF]/30 h-full">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-xs text-zinc-400 font-normal">Cartel Pot</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-black text-neon-blue">${potBalance.toLocaleString()}</div>
+                            <p className="text-xs text-zinc-500 mt-1">💼 USDC</p>
+                        </CardContent>
+                    </StatCard>
+                </motion.div>
             </div>
 
             {/* Cartel Earnings (24h) */}
-            <StatCard className="card-glow border-[#4FF0E6]/30">
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-xs text-zinc-400 font-normal">Cartel Earnings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-black text-[#4FF0E6]">${dailyRevenue.toLocaleString()}</div>
-                    <p className="text-xs text-zinc-500 mt-1">📊 Last 24h</p>
-                </CardContent>
-            </StatCard>
+            <motion.div variants={fadeUp} whileHover="hover" whileTap="tap">
+                <StatCard className="card-glow border-[#4FF0E6]/30">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-xs text-zinc-400 font-normal">Cartel Earnings</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-black text-[#4FF0E6]">${dailyRevenue.toLocaleString()}</div>
+                        <p className="text-xs text-zinc-500 mt-1">📊 Last 24h</p>
+                    </CardContent>
+                </StatCard>
+            </motion.div>
 
             {/* Your Cut (Profit Share) */}
-            <StatCard className="card-glow border-[#3DFF72]/30">
-                <CardHeader>
-                    <CardTitle className="text-lg text-white heading-font flex items-center gap-2">
-                        💰 Your Cut
-                    </CardTitle>
-                    <p className="text-xs text-zinc-500">24h Cartel Profits</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <span className="text-zinc-400 text-sm">Claimable Now</span>
-                        <span className="text-2xl font-black text-[#3DFF72]">${profitAmount.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                        <span className="text-zinc-500">Your Empire Share</span>
-                        <span className="text-[#D4AF37] font-bold">{formattedPct}%</span>
-                    </div>
-                    <ClaimButton
-                        onClick={handleClaim}
-                        disabled={isClaiming || profitAmount === 0}
-                    >
-                        {isClaiming ? "Claiming..." : "Claim Your Cut"}
-                    </ClaimButton>
-                </CardContent>
-            </StatCard>
+            <motion.div variants={fadeUp} whileHover="hover" whileTap="tap">
+                <StatCard className="card-glow border-[#3DFF72]/30">
+                    <CardHeader>
+                        <CardTitle className="text-lg text-white heading-font flex items-center gap-2">
+                            💰 Your Cut
+                        </CardTitle>
+                        <p className="text-xs text-zinc-500">24h Cartel Profits</p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <span className="text-zinc-400 text-sm">Claimable Now</span>
+                            <motion.span
+                                key={profitAmount}
+                                animate={{ scale: [1, 1.3, 1] }}
+                                transition={{ duration: 0.4 }}
+                                className="text-2xl font-black text-[#3DFF72]"
+                            >
+                                ${profitAmount.toLocaleString()}
+                            </motion.span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs">
+                            <span className="text-zinc-500">Your Empire Share</span>
+                            <span className="text-[#D4AF37] font-bold">{formattedPct}%</span>
+                        </div>
+                        <ClaimButton
+                            onClick={handleClaim}
+                            disabled={isClaiming || profitAmount === 0}
+                        >
+                            {isClaiming ? "Claiming..." : "Claim Your Cut"}
+                        </ClaimButton>
+                    </CardContent>
+                </StatCard>
+            </motion.div>
 
             {/* Actions */}
             <div className="space-y-3">
                 <h2 className="text-lg font-bold heading-font text-zinc-200">Actions</h2>
                 <div className="grid grid-cols-3 gap-3">
-                    <ActionButton
-                        variant="raid"
-                        className="h-28"
-                        onClick={async () => {
-                            await haptics.light();
-                            setIsRaidModalOpen(true);
-                        }}
+                    <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                     >
-                        <span className="text-3xl">⚔️</span>
-                        <span className="font-bold heading-font text-sm mt-2">Raid</span>
-                    </ActionButton>
+                        <ActionButton
+                            variant="raid"
+                            className="h-28 w-full"
+                            onClick={async () => {
+                                await haptics.light();
+                                setIsRaidModalOpen(true);
+                            }}
+                        >
+                            <span className="text-3xl">⚔️</span>
+                            <span className="font-bold heading-font text-sm mt-2">Raid</span>
+                        </ActionButton>
+                    </motion.div>
 
-                    <ActionButton
-                        variant="clan"
-                        className="h-28"
-                        onClick={async () => {
-                            await haptics.light();
-                            setIsMyClanModalOpen(true);
-                        }}
-                    >
-                        <span className="text-3xl">🧬</span>
-                        <span className="font-bold heading-font text-sm mt-2">My Clan</span>
-                    </ActionButton>
+                    <motion.div whileHover="hover" whileTap="tap">
+                        <ActionButton
+                            variant="clan"
+                            className="h-28 w-full"
+                            onClick={async () => {
+                                await haptics.light();
+                                setIsMyClanModalOpen(true);
+                            }}
+                        >
+                            <span className="text-3xl">🧬</span>
+                            <span className="font-bold heading-font text-sm mt-2">My Clan</span>
+                        </ActionButton>
+                    </motion.div>
 
-                    <ActionButton
-                        variant="betray"
-                        className="h-28"
-                        onClick={async () => {
-                            await haptics.warning();
-                            setIsBetrayModalOpen(true);
-                        }}
-                    >
-                        <span className="text-3xl">🩸</span>
-                        <span className="font-bold heading-font text-sm mt-2">Betray</span>
-                    </ActionButton>
+                    <motion.div whileHover="hover" whileTap="tap">
+                        <ActionButton
+                            variant="betray"
+                            className="h-28 w-full"
+                            onClick={async () => {
+                                await haptics.warning();
+                                setIsBetrayModalOpen(true);
+                            }}
+                        >
+                            <span className="text-3xl">🩸</span>
+                            <span className="font-bold heading-font text-sm mt-2">Betray</span>
+                        </ActionButton>
+                    </motion.div>
                 </div>
             </div>
 

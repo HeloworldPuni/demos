@@ -10,6 +10,8 @@ import ReferralModal from "@/components/ReferralModal";
 import { useState, useEffect } from 'react';
 import { ClanSummary } from '@/lib/clan-service';
 import { useFrameContext } from "@/components/providers/FrameProvider";
+import { motion } from "framer-motion";
+import { fadeUp } from "@/components/motion/variants";
 
 export default function ProfilePage() {
     const { address } = useAccount();
@@ -51,7 +53,12 @@ export default function ProfilePage() {
     return (
         <AuthenticatedRoute>
             <AppLayout>
-                <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto">
+                <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={fadeUp}
+                    className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto"
+                >
                     <header className="pt-2 flex justify-between items-start">
                         <div>
                             <h1 className="text-2xl font-black heading-font text-neon-blue">PROFILE</h1>
@@ -75,7 +82,10 @@ export default function ProfilePage() {
                                 <div className="p-1 border-2 border-[#4A87FF] rounded-full shrink-0">
                                     {displayAvatar ? (
                                         // eslint-disable-next-line @next/next/no-img-element
-                                        <img
+                                        <motion.img
+                                            initial={{ rotate: -5, opacity: 0 }}
+                                            animate={{ rotate: 0, opacity: 1 }}
+                                            transition={{ duration: 0.25 }}
                                             src={displayAvatar}
                                             alt="Profile"
                                             className="w-16 h-16 rounded-full object-cover"
@@ -113,12 +123,14 @@ export default function ProfilePage() {
                                 <span className="text-white font-bold">{referralStats?.directInvitesUsed || 0}</span>
                             </div>
 
-                            <Button
-                                className="w-full bg-[#D4AF37] hover:bg-[#F4E5B8] text-black font-bold"
+                            <motion.button
+                                animate={{ scale: [1, 1.05, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                                className="w-full bg-[#D4AF37] hover:bg-[#F4E5B8] text-black font-bold h-10 px-4 py-2 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                                 onClick={() => setIsReferralOpen(true)}
                             >
                                 Get Referral Link
-                            </Button>
+                            </motion.button>
                         </CardContent>
                     </Card>
 
@@ -134,7 +146,7 @@ export default function ProfilePage() {
                         address={address}
                         referralCount={referralStats?.directInvitesUsed || 0}
                     />
-                </div>
+                </motion.div>
             </AppLayout>
         </AuthenticatedRoute>
     );
