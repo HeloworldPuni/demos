@@ -111,6 +111,8 @@ export function FeaturesGrid() {
 }
 
 export function HowItWorks() {
+    const stepIcons = ["👑", "⚔️", "💰"];
+
     return (
         <section className="py-24 px-4 bg-gradient-to-b from-[#0B0E12] to-black">
             <div className="max-w-4xl mx-auto text-center mb-16">
@@ -125,18 +127,37 @@ export function HowItWorks() {
                 {LANDING_CONTENT.howItWorks.map((step, idx) => (
                     <motion.div
                         key={idx}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: idx * 0.2 }}
+                        // Float Animation
+                        animate={{ y: [-3, 3] }}
+                        transition={{
+                            y: { duration: 3, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: idx * 0.5 }
+                        }}
                         className="flex flex-col items-center text-center relative z-10"
                     >
-                        <div className="w-24 h-24 rounded-2xl bg-[#1A1D26] border border-zinc-800 flex items-center justify-center text-3xl font-black text-zinc-500 mb-6 shadow-xl relative group">
-                            <span className="group-hover:text-[#3DFF72] transition-colors">{idx + 1}</span>
-                            <div className="absolute inset-0 bg-[#3DFF72]/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
-                        </div>
-                        <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
-                        <p className="text-zinc-500 text-sm">{step.desc}</p>
+                        {/* Step Card */}
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            className="w-32 h-32 rounded-3xl bg-gradient-to-br from-[#171A1F] to-[#0D0F12] border border-zinc-700/50 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] flex items-center justify-center relative mb-8 overflow-hidden group"
+                        >
+                            {/* Outer Glow */}
+                            <div className="absolute inset-0 rounded-3xl shadow-[0_0_20px_rgba(59,130,246,0.3)] opacity-50 group-hover:opacity-100 transition-opacity" />
+
+                            {/* Watermark Icon */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-10 text-6xl select-none pointer-events-none scale-150">
+                                {stepIcons[idx]}
+                            </div>
+
+                            {/* Big Number */}
+                            <motion.span
+                                whileHover={{ scale: 1.2 }}
+                                className="relative z-10 text-4xl font-black text-zinc-400 group-hover:text-[#3DFF72] transition-colors"
+                            >
+                                {idx + 1}
+                            </motion.span>
+                        </motion.div>
+
+                        <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-wide">{step.title}</h3>
+                        <p className="text-zinc-500 text-sm max-w-xs">{step.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -158,4 +179,67 @@ export function LandingFooter() {
             <p className="text-xs text-zinc-700">© 2025 Base Cartel. All rights reserved.</p>
         </footer>
     )
+}
+
+export function GameplayShowcase() {
+    const screens = [
+        { label: "Dashboard Preview", id: 1 },
+        { label: "Raid Screen Preview", id: 2 },
+        { label: "Clan Preview", id: 3 },
+        { label: "Earnings Preview", id: 4 },
+    ];
+
+    return (
+        <section className="py-24 px-4 bg-zinc-950/30">
+            <div className="max-w-6xl mx-auto text-center mb-12">
+                <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Interface</h2>
+                <h3 className="text-3xl font-bold text-white">PROVEN GAME LOOP</h3>
+            </div>
+            <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+                {screens.map((screen) => (
+                    <div key={screen.id} className="flex flex-col gap-3">
+                        {/* Frame */}
+                        <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            className="aspect-[9/19] rounded-xl relative overflow-hidden group shadow-[0_0_30px_rgba(0,102,255,0.3)] bg-zinc-900 border border-zinc-800"
+                        >
+                            {/* 1. Placeholder Blur (Neutral) */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 blur-xl opacity-50" />
+
+                            {/* 2. Dark Overlay */}
+                            <div className="absolute inset-0 bg-black/70 z-10" />
+
+                            {/* 3. Watermark Text */}
+                            <div className="absolute inset-0 flex items-center justify-center z-20">
+                                <span className="text-zinc-500 font-bold uppercase tracking-widest text-xs opacity-50 rotate-[-15deg] border border-zinc-500/30 px-2 py-1 rounded">
+                                    Preview
+                                </span>
+                            </div>
+
+                            {/* 4. Neon Corner Accents */}
+                            {/* Top Left */}
+                            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-blue-500 z-30 opacity-50 group-hover:opacity-100 transition-opacity" />
+                            {/* Top Right */}
+                            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-blue-500 z-30 opacity-50 group-hover:opacity-100 transition-opacity" />
+                            {/* Bottom Left */}
+                            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-blue-500 z-30 opacity-50 group-hover:opacity-100 transition-opacity" />
+                            {/* Bottom Right */}
+                            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-blue-500 z-30 opacity-50 group-hover:opacity-100 transition-opacity" />
+
+                            {/* Side Glow on Hover */}
+                            <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity z-10" />
+
+                        </motion.div>
+
+                        {/* Label */}
+                        <div className="text-center">
+                            <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
+                                {screen.label}
+                            </span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </section>
+    );
 }
