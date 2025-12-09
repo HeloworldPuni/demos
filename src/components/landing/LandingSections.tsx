@@ -231,10 +231,16 @@ export function LandingFooter() {
             <div className="mb-8">
                 <span className="text-2xl">🎩</span>
             </div>
-            <div className="flex justify-center gap-8 mb-8 text-sm text-zinc-500 font-mono uppercase tracking-widest">
-                <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
-                <Link href="/leaderboard" className="hover:text-white transition-colors">Ranking</Link>
-                <a href="https://github.com/heloworldpuni/demos" target="_blank" className="hover:text-white transition-colors">Code</a>
+            <div className="flex justify-center gap-8 mb-8">
+                <a href="#" className="text-zinc-500 hover:text-white hover:scale-110 transition-all duration-300">
+                    <IconX className="w-5 h-5" />
+                </a>
+                <a href="#" className="text-zinc-500 hover:text-[#0052FF] hover:scale-110 transition-all duration-300">
+                    <IconBase className="w-6 h-6" />
+                </a>
+                <a href="#" className="text-zinc-500 hover:text-[#855DCD] hover:scale-110 transition-all duration-300">
+                    <IconFarcaster className="w-6 h-6" />
+                </a>
             </div>
             <p className="text-xs text-zinc-700">© 2025 Base Cartel. All rights reserved.</p>
         </footer>
