@@ -6,6 +6,10 @@ import { RankRow } from "@/components/ui/RankRow";
 import { haptics } from "@/lib/haptics";
 import { getCartelTitle, getTitleTheme } from "@/lib/cartel-titles";
 import MyClanModal from "./MyClanModal";
+import { SFX, playSound } from "@/lib/audio";
+import { useState, useEffect } from 'react';
+import { motion } from "framer-motion";
+import { fadeUp, staggerList, shimmer } from "@/components/ui/motionTokens";
 
 interface Player {
     rank: number;
@@ -15,10 +19,6 @@ interface Player {
     fid?: number;
     address: string;
 }
-
-import { useState, useEffect } from 'react';
-import { motion } from "framer-motion";
-import { fadeUp, staggerList, shimmer } from "@/components/ui/motionTokens";
 
 export default function Leaderboard() {
     const [players, setPlayers] = useState<Player[]>([]);
@@ -45,6 +45,7 @@ export default function Leaderboard() {
 
     const handleViewProfile = async (address?: string) => {
         if (address) {
+            playSound('click');
             await haptics.light();
             setSelectedPlayer(address);
         }
@@ -88,8 +89,8 @@ export default function Leaderboard() {
                                     >
                                         <RankRow
                                             index={index}
-                                            className={`p-3 border ${player.rank === 1
-                                                ? "bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 border-[#D4AF37]/50 glow-gold"
+                                            className={`p-3 border transition-all duration-300 ${player.rank === 1
+                                                ? "bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5 border-[#D4AF37]/50 glow-gold scale-[1.02]"
                                                 : player.rank === 2
                                                     ? "bg-gradient-to-r from-zinc-400/20 to-zinc-400/5 border-zinc-400/50"
                                                     : player.rank === 3

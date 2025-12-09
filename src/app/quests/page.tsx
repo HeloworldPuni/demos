@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { fadeUp, slideLeft, scaleHover, scaleTap, motionPage, motionList } from "@/components/ui/motionTokens";
+import { SFX, playSound } from "@/lib/audio";
 
 export default function QuestsPage() {
     return (

@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  /* 4-Page Mini-App Theme */
+  /* 4-Page Mini-App Theme - Mafia Glow */
   --background: #0B0F17;
   --foreground: #E5E7EB;
 
@@ -16,6 +16,7 @@
   --popover-foreground: #E5E7EB;
 
   --primary: #3B82F6;
+  /* Neon Electric Blue */
   --primary-foreground: #ffffff;
 
   --secondary: #262A33;
@@ -25,9 +26,11 @@
   --muted-foreground: #6B7280;
 
   --accent: #FFD700;
+  /* Mafia Gold */
   --accent-foreground: #0B0F17;
 
-  --destructive: #EF4444;
+  --destructive: #FF4444;
+  /* Blood Red */
   --destructive-foreground: #ffffff;
 
   --border: #262A33;
@@ -70,7 +73,20 @@ h6,
 .card-glow {
   background: var(--card);
   border: 1px solid var(--border);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0 20px rgba(17, 24, 39, 0.6);
+}
+
+.btn-glow {
+  @apply bg-primary text-white rounded-xl relative;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+}
+
+.glow-gold {
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+}
+
+.glow-red {
+  box-shadow: 0 0 12px rgba(255, 68, 68, 0.7);
 }
 
 .text-gold {
@@ -79,6 +95,13 @@ h6,
 
 .glow-text-blue {
   text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+/* Background Texture Utility */
+.mafia-pattern {
+  background-image: radial-gradient(#262A33 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.1;
 }
 
 * {

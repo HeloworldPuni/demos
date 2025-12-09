@@ -12,6 +12,7 @@ import { ClanSummary } from '@/lib/clan-service';
 import { useFrameContext } from "@/components/providers/FrameProvider";
 import { motion } from "framer-motion";
 import { fadeUp, pulse, motionPage } from "@/components/ui/motionTokens";
+import { SFX, playSound } from "@/lib/audio"; // Audio Import
 
 export default function ProfilePage() {
     const { address } = useAccount();
@@ -23,6 +24,7 @@ export default function ProfilePage() {
 
     const [isReferralOpen, setIsReferralOpen] = useState(false);
     const [referralStats, setReferralStats] = useState<ClanSummary | null>(null);
+    const [sfxEnabled, setSfxEnabled] = useState(true);
 
     // 2. Try Farcaster Context (Worked for user on mobile)
     const { context } = useFrameContext();
@@ -48,7 +50,19 @@ export default function ProfilePage() {
                 .then(data => setReferralStats(data))
                 .catch(err => console.error(err));
         }
+
+        const stored = localStorage.getItem("sfxEnabled");
+        if (stored !== null) {
+            setSfxEnabled(stored === "true");
+        }
     }, [address]);
+
+    const toggleSfx = () => {
+        const newState = !sfxEnabled;
+        setSfxEnabled(newState);
+        localStorage.setItem("sfxEnabled", String(newState));
+        if (newState) playSound('ping');
+    };
 
     return (
         <AuthenticatedRoute>
@@ -68,6 +82,19 @@ export default function ProfilePage() {
                             Disconnect
                         </Button>
                     </header>
+
+                    {/* Volume Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                        <span className="text-sm font-medium text-zinc-300">Sound Effects</span>
+                        <Button
+                            variant={sfxEnabled ? "default" : "outline"}
+                            size="sm"
+                            onClick={toggleSfx}
+                            className={sfxEnabled ? "bg-[#3B82F6] text-white" : "text-zinc-500"}
+                        >
+                            {sfxEnabled ? "ON" : "OFF"}
+                        </Button>
+                    </div>
 
                     {/* Identity Card - FULL MANUAL CONTROL */}
                     <Card className="card-glow border-zinc-700">
@@ -122,7 +149,10 @@ export default function ProfilePage() {
                                 variants={pulse}
                                 animate="animate"
                                 className="w-full bg-[#D4AF37] hover:bg-[#F4E5B8] text-black font-bold h-10 px-4 py-2 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-                                onClick={() => setIsReferralOpen(true)}
+                                onClick={() => {
+                                    playSound('ping');
+                                    setIsReferralOpen(true);
+                                }}
                             >
                                 Get Referral Link
                             </motion.button>
