@@ -12,7 +12,6 @@ async function capture() {
 
         await page.setViewport({ width: 393, height: 852, deviceScaleFactor: 1 });
 
-        // Try both localhost and 127.0.0.1 just in case
         const screens = [
             { name: 'dashboard_preview', url: 'http://localhost:3000/screens/dashboard' },
             { name: 'raid_preview', url: 'http://localhost:3000/screens/raid' },
@@ -34,6 +33,21 @@ async function capture() {
                 const response = await page.goto(screen.url, { waitUntil: 'domcontentloaded', timeout: 120000 });
                 console.log(`Response status: ${response ? response.status() : 'null'}`);
 
+                // Inject CSS to hide Next.js error overlay and toasts
+                await page.addStyleTag({
+                    content: `
+                        nextjs-portal,
+                        #nextjs-error-overlay,
+                        [data-nextjs-toast],
+                        [data-nextjs-dialog-overlay],
+                        .nextjs-toast-errors-parent {
+                            display: none !important;
+                            visibility: hidden !important;
+                            opacity: 0 !important;
+                        }
+                    `
+                });
+
                 await new Promise(r => setTimeout(r, 2000));
 
                 const outPath = path.join(outDir, `${screen.name}.png`);
@@ -41,7 +55,6 @@ async function capture() {
                 console.log(`Saved ${outPath}`);
             } catch (e) {
                 console.error(`FAILED to capture ${screen.name}:`, e.message);
-                // Fallback to localhost if 127 failed?
             }
         }
     } catch (err) {
