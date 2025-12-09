@@ -149,90 +149,77 @@ export function HowItWorks() {
                         <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-wide">{step.title}</h3>
                         <p className="text-zinc-500 text-sm max-w-xs">{step.desc}</p>
                     </motion.div>
-                ))}
-            </div>
-        </section>
-    );
-}
-
-export function GameplayShowcase() {
-    const screens = [
-        { label: "Dashboard Preview", id: 1 },
-        { label: "Raid Screen Preview", id: 2 },
-        { label: "Clan Preview", id: 3 },
-        { label: "Earnings Preview", id: 4 },
-    ];
 
     return (
-        <section className="py-24 px-4 bg-zinc-950/30">
-            <div className="max-w-6xl mx-auto text-center mb-12">
-                <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Interface</h2>
-                <h3 className="text-3xl font-bold text-white">PROVEN GAME LOOP</h3>
-            </div>
-            <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
-                {screens.map((screen) => {
-                    let imgSrc = "";
-                    switch (screen.id) {
-                        case 1: imgSrc = "/img/dashboard_preview.png"; break;
-                        case 2: imgSrc = "/img/raid_preview.png"; break;
-                        case 3: imgSrc = "/img/clan_preview.png"; break;
-                        case 4: imgSrc = "/img/earnings_preview.png"; break;
-                        default: imgSrc = "/img/dashboard_preview.png";
-                    }
+                <section className="py-24 px-4 bg-zinc-950/30">
+                    <div className="max-w-6xl mx-auto text-center mb-12">
+                        <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Interface</h2>
+                        <h3 className="text-3xl font-bold text-white">PROVEN GAME LOOP</h3>
+                    </div>
+                    <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {screens.map((screen) => {
+                            let imgSrc = "";
+                            switch (screen.id) {
+                                case 1: imgSrc = "/img/dashboard_preview.png"; break;
+                                case 2: imgSrc = "/img/raid_preview.png"; break;
+                                case 3: imgSrc = "/img/clan_preview.png"; break;
+                                case 4: imgSrc = "/img/earnings_preview.png"; break;
+                                default: imgSrc = "/img/dashboard_preview.png";
+                            }
 
-                    return (
-                        <div key={screen.id} className="flex flex-col gap-3">
-                            <motion.div
-                                whileHover={{ scale: 1.02 }}
-                                className="aspect-[9/19] rounded-xl relative overflow-hidden group shadow-[0_0_30px_rgba(0,102,255,0.2)] bg-zinc-900 border border-zinc-800"
-                            >
-                                <img
-                                    src={imgSrc}
-                                    alt={screen.label}
-                                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-                                />
-                                <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500 z-10" />
-                                <div className="absolute inset-0 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                    <span className="text-white/20 font-bold uppercase tracking-widest text-lg rotate-[-15deg] border-2 border-white/10 px-4 py-2 rounded-xl">
-                                        Live Preview
-                                    </span>
+                            return (
+                                <div key={screen.id} className="flex flex-col gap-3">
+                                    <motion.div
+                                        whileHover={{ scale: 1.02 }}
+                                        className="aspect-[9/19] rounded-xl relative overflow-hidden group shadow-[0_0_30px_rgba(0,102,255,0.2)] bg-zinc-900 border border-zinc-800"
+                                    >
+                                        <img
+                                            src={imgSrc}
+                                            alt={screen.label}
+                                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+                                        />
+                                        <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500 z-10" />
+                                        <div className="absolute inset-0 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                            <span className="text-white/20 font-bold uppercase tracking-widest text-lg rotate-[-15deg] border-2 border-white/10 px-4 py-2 rounded-xl">
+                                                Live Preview
+                                            </span>
+                                        </div>
+                                        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-blue-500 z-30 opacity-60 group-hover:opacity-100 transition-opacity" />
+                                        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-blue-500 z-30 opacity-60 group-hover:opacity-100 transition-opacity" />
+                                        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-blue-500 z-30 opacity-60 group-hover:opacity-100 transition-opacity" />
+                                        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-blue-500 z-30 opacity-60 group-hover:opacity-100 transition-opacity" />
+                                    </motion.div>
+                                    <div className="text-center">
+                                        <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium group-hover:text-white transition-colors">
+                                            {screen.label}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-blue-500 z-30 opacity-60 group-hover:opacity-100 transition-opacity" />
-                                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-blue-500 z-30 opacity-60 group-hover:opacity-100 transition-opacity" />
-                                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-blue-500 z-30 opacity-60 group-hover:opacity-100 transition-opacity" />
-                                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-blue-500 z-30 opacity-60 group-hover:opacity-100 transition-opacity" />
-                            </motion.div>
-                            <div className="text-center">
-                                <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium group-hover:text-white transition-colors">
-                                    {screen.label}
-                                </span>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </section>
-    );
+                            );
+                        })}
+                    </div>
+                </section>
+                );
 }
 
-export function LandingFooter() {
+                export function LandingFooter() {
     return (
-        <footer className="py-12 border-t border-white/5 bg-zinc-950/50 text-center">
-            <div className="mb-8">
-                <span className="text-2xl">🎩</span>
-            </div>
-            <div className="flex justify-center gap-8 mb-8">
-                <a href="#" className="text-zinc-500 hover:text-white hover:scale-110 transition-all duration-300">
-                    <IconX className="w-5 h-5" />
-                </a>
-                <a href="#" className="text-zinc-500 hover:text-[#0052FF] hover:scale-110 transition-all duration-300">
-                    <IconBase className="w-6 h-6" />
-                </a>
-                <a href="#" className="text-zinc-500 hover:text-[#855DCD] hover:scale-110 transition-all duration-300">
-                    <IconFarcaster className="w-6 h-6" />
-                </a>
-            </div>
-            <p className="text-xs text-zinc-700">© 2025 Base Cartel. All rights reserved.</p>
-        </footer>
-    )
+                <footer className="py-12 border-t border-white/5 bg-zinc-950/50 text-center">
+                    <div className="mb-8">
+                        <span className="text-2xl">🎩</span>
+                    </div>
+                    <div className="flex justify-center gap-8 mb-8">
+                        <a href="#" className="text-zinc-500 hover:text-white hover:scale-110 transition-all duration-300">
+                            <IconX className="w-5 h-5" />
+                        </a>
+                        <a href="#" className="text-zinc-500 hover:text-[#0052FF] hover:scale-110 transition-all duration-300">
+                            <IconBase className="w-6 h-6" />
+                        </a>
+                        <a href="#" className="text-zinc-500 hover:text-[#855DCD] hover:scale-110 transition-all duration-300">
+                            <IconFarcaster className="w-6 h-6" />
+                        </a>
+                    </div>
+                    <p className="text-xs text-zinc-700">© 2025 Base Cartel. All rights reserved.</p>
+                </footer>
+                )
 }
