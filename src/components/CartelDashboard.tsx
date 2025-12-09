@@ -150,7 +150,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
         <motion.div
             initial="initial"
             animate="animate"
-            className="min-h-screen bg-[#0B0E12] text-white pb-24 max-w-[400px] mx-auto relative overflow-hidden"
+            className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto pb-24 relative overflow-hidden"
         >
             {/* Background Elements (Restored & Blended) */}
             <div className="absolute top-0 left-0 w-full h-[600px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/15 via-[#0B0E12]/40 to-[#0B0E12] pointer-events-none blur-3xl opacity-80" />
@@ -179,7 +179,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             </motion.header>
 
             {/* STATS GRID (Compact) */}
-            <motion.div variants={stagger} className="grid grid-cols-2 gap-3 px-4">
+            <motion.div variants={stagger} className="grid grid-cols-2 gap-3">
 
                 {/* Shares */}
                 <motion.div variants={fadeUp} whileHover="hover" whileTap="tap">
@@ -255,7 +255,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             </motion.div>
 
             {/* ACTION BUTTONS */}
-            <motion.div variants={stagger} className="grid grid-cols-3 gap-3 px-4">
+            <motion.div variants={stagger} className="grid grid-cols-3 gap-3">
 
                 {/* Raid */}
                 <motion.button
@@ -308,7 +308,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             </motion.div>
 
             {/* ACTIVITY FEED */}
-            <motion.div variants={fadeUp} className="space-y-3 px-4">
+            <motion.div variants={fadeUp} className="space-y-3">
                 <div className="flex justify-between items-center px-1">
                     <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Live Wire</h2>
                     <Button
@@ -324,7 +324,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             </motion.div>
 
             {/* Automation (Bottom) */}
-            <motion.div variants={fadeUp} className="px-4">
+            <motion.div variants={fadeUp}>
                 <AutoAgentPanel compact={true} />
             </motion.div>
 
