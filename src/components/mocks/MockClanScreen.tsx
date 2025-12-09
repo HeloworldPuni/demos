@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function MockClanScreen() {
     const members = [
@@ -52,9 +51,9 @@ export default function MockClanScreen() {
                             {members.map((m, i) => (
                                 <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors">
                                     <div className="flex items-center gap-3">
-                                        <Avatar className="h-8 w-8 border border-white/10">
-                                            <AvatarFallback className="bg-zinc-800 text-xs">{m.name[0]}</AvatarFallback>
-                                        </Avatar>
+                                        <div className="h-8 w-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-500">
+                                            {m.name[0]}
+                                        </div>
                                         <span className={`text-sm font-bold ${i === 0 ? "text-[#3DFF72]" : "text-white"}`}>{m.name}</span>
                                     </div>
                                     <span className="text-[10px] uppercase text-zinc-500 border border-zinc-700 px-2 py-0.5 rounded">{m.rank}</span>
