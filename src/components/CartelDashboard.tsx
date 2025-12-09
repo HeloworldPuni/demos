@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeUp, scaleHover, scaleTap } from "@/components/ui/motionTokens";
 import { BossBadge } from "@/components/ui/BossBadge";
+import { StatCard } from "@/components/ui/StatCard";
 import { ClaimButton } from "@/components/ui/ClaimButton";
 import { ActionButton } from "@/components/ui/ActionButton";
-import { SFX, playSound } from "@/lib/audio"; // Added Import
+import { SFX, playSound } from "@/lib/audio";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import RaidModal from "./RaidModal";
 import BadgesList from "./BadgesList";
 import BetrayModal from "./BetrayModal";
-// Removed InviteModal
 import { haptics } from "@/lib/haptics";
 import AutoAgentPanel from "@/components/agent/AutoAgentPanel";
 import ActivityFeed from "./ActivityFeed";
