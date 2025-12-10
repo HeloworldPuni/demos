@@ -12,66 +12,57 @@ export interface LeaderboardEntry {
     title?: string;
 }
 
-// Mock data - in future, replace with DB/Subgraph query
-const MOCK_DATA: LeaderboardEntry[] = [
-    {
-        rank: 1,
-        address: "0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-        name: "User A (Boss)",
-        shares: 2450,
-        totalClaimed: 1220,
-        raidCount: 15,
-        fid: 3621,
-        lastActive: new Date().toISOString()
-    },
-    {
-        rank: 2,
-        address: "0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
-        name: "User B (Capo)",
-        shares: 1890,
-        totalClaimed: 945,
-        raidCount: 8,
-        fid: 12345,
-        lastActive: new Date(Date.now() - 3600000).toISOString()
-    },
-    {
-        rank: 3,
-        address: "0xCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
-        name: "User C (Target)",
-        shares: 1420,
-        totalClaimed: 710,
-        raidCount: 12,
-        fid: 67890,
-        lastActive: new Date(Date.now() - 7200000).toISOString()
-    },
-    {
-        rank: 4,
-        address: "0xDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-        name: "User D (New)",
-        shares: 0,
-        totalClaimed: 0,
-        raidCount: 0,
-        lastActive: new Date(Date.now() - 10800000).toISOString()
-    },
-    {
-        rank: 5,
-        address: "0x5678901234567890123456789012345678901234",
-        name: "grinder.base",
-        shares: 750,
-        totalClaimed: 375,
-        raidCount: 3,
-        lastActive: new Date(Date.now() - 14400000).toISOString()
+import prisma from './prisma';
+
+export async function getLeaderboard(limit: number = 20): Promise<LeaderboardEntry[]> {
+    const users = await prisma.user.findMany({
+        orderBy: { shares: 'desc' },
+        take: limit,
+        include: {
+            _count: {
+                select: {
+                    clanMembers: true // Using clanMembers as proxy or just fetch raids separately
+                }
+            }
+        }
+    });
+
+    // To get raid counts, we might need a separate aggregation or assume 0 for now to be fast
+    // Actually, let's just do a count if it's small, or use a grouped query.
+    // For MVP, getting the correct SHARES rank is the most important.
+
+    // Let's get raid counts for these top users
+    const addresses = users.map(u => u.walletAddress);
+
+    let raidCounts: Record<string, number> = {};
+
+    if (addresses.length > 0) {
+        const events = await prisma.cartelEvent.groupBy({
+            by: ['attacker'],
+            where: {
+                attacker: { in: addresses },
+                type: { in: ['RAID', 'HIGH_STAKES_RAID'] }
+            },
+            _count: {
+                id: true
+            }
+        });
+
+        events.forEach(ev => {
+            if (ev.attacker) raidCounts[ev.attacker] = ev._count.id;
+        });
     }
-];
 
-export async function getLeaderboard(limit: number = 10): Promise<LeaderboardEntry[]> {
-    // Simulate async DB call
-    const data = MOCK_DATA.slice(0, limit);
-
-    // Add titles
-    return data.map(entry => ({
-        ...entry,
-        title: getCartelTitle(entry.rank, entry.shares)
+    return users.map((u, i) => ({
+        rank: i + 1,
+        address: u.walletAddress,
+        name: u.walletAddress, // TODO: Resolving Farcaster names is done on frontend or separate service
+        shares: u.shares || 0,
+        totalClaimed: u.referralRewardsClaimed || 0, // Using referral rewards claim as proxy for now
+        raidCount: raidCounts[u.walletAddress] || 0,
+        fid: u.farcasterId ? parseInt(u.farcasterId) : undefined,
+        lastActive: u.lastSeenAt?.toISOString() || u.createdAt.toISOString(),
+        title: getCartelTitle(i + 1, u.shares || 0)
     }));
 }
 
