@@ -9,27 +9,25 @@ export const IconX = ({ className = "w-6 h-6" }: { className?: string }) => (
     </svg>
 );
 
+// Base (Coinbase L2) Logo - Approximate (Circle with dot)
 export const IconBase = ({ className = "w-6 h-6" }: { className?: string }) => (
     <svg
         viewBox="0 0 24 24"
         fill="currentColor"
         className={className}
-        aria-hidden="true"
     >
-        {/* Simplified Base Logo Representation (Circle with Bridge/Bar concept) */}
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
-        <path d="M7 12h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 15a5 5 0 100-10 5 5 0 000 10z" />
     </svg>
 );
 
+// Farcaster Logo
 export const IconFarcaster = ({ className = "w-6 h-6" }: { className?: string }) => (
     <svg
         viewBox="0 0 24 24"
         fill="currentColor"
         className={className}
-        aria-hidden="true"
     >
-        <path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
-        <path d="M16 8v8m-8-8v8m-4-4h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M18.24 2H5.76C3.68 2 2 3.68 2 5.76v12.48C2 20.32 3.68 22 5.76 22h12.48c2.08 0 3.76-1.68 3.76-3.76V5.76C22 3.68 20.32 2 18.24 2zM16.8 17.6h-1.6l-1.2-3.2h-4l-1.2 3.2H7.2l4.8-12.8h1.6l4.8 12.8zm-3.6-6.4l-1.2-3.2-1.2 3.2h2.4z" />
     </svg>
 );
+

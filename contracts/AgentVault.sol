@@ -32,13 +32,14 @@ contract AgentVault is EIP712, Ownable {
     event Withdraw(address indexed user, uint256 amount);
     event ActionExecuted(address indexed user, string action, uint256 fee);
 
-    constructor(address _usdc, address _cartelCore) EIP712("BaseCartelAgent", "1") Ownable(msg.sender) {
+    constructor(address _usdc, address _cartelCore, address _cartelPot) EIP712("BaseCartelAgent", "1") Ownable(msg.sender) {
         usdc = IERC20(_usdc);
         cartelCore = ICartelCore(_cartelCore);
         
-        // Approve CartelCore to spend unlimited USDC from this vault
-        // This is safe because CartelCore only pulls fees when we call it
+        // Approve CartelCore and CartelPot to spend unlimited USDC
+        // Core for potential future features, Pot for current fee collection
         usdc.approve(_cartelCore, type(uint256).max);
+        usdc.approve(_cartelPot, type(uint256).max);
     }
 
     function deposit(uint256 amount) external {
@@ -56,57 +57,62 @@ contract AgentVault is EIP712, Ownable {
     }
 
     // Execute action on behalf of user
-    function executeAction(
-        address user,
-        string calldata action, // "raid" or "claim"
-        bytes calldata data,    // target address for raid (abi encoded)
-        uint256 deadline,
-        uint8 v, bytes32 r, bytes32 s
-    ) external {
+    struct ActionParams {
+        address user;
+        string action;
+        bytes data;
+        uint256 deadline;
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
+    }
+
+    // Execute action on behalf of user
+    function executeAction(ActionParams calldata params) external {
         // 1. Verify Signature
-        require(block.timestamp <= deadline, "Signature expired");
+        require(block.timestamp <= params.deadline, "Signature expired");
         
         bytes32 structHash = keccak256(abi.encode(
             ACTION_TYPEHASH,
-            user,
-            keccak256(bytes(action)),
-            keccak256(data),
-            nonces[user]++,
-            deadline
+            params.user,
+            keccak256(bytes(params.action)),
+            keccak256(params.data),
+            nonces[params.user]++,
+            params.deadline
         ));
         
         bytes32 hash = _hashTypedDataV4(structHash);
-        address signer = ECDSA.recover(hash, v, r, s);
-        require(signer == user, "Invalid signature");
+        address signer = ECDSA.recover(hash, params.v, params.r, params.s);
+        require(signer == params.user, "Invalid signature");
 
         // 2. Execute Action
-        if (keccak256(bytes(action)) == keccak256(bytes("raid"))) {
-            address target = abi.decode(data, (address));
+        if (keccak256(bytes(params.action)) == keccak256(bytes("raid"))) {
+            address target = abi.decode(params.data, (address));
             
             // Get fee dynamically from CartelCore
             uint256 fee = cartelCore.RAID_FEE();
             
-            require(balances[user] >= fee, "Insufficient user balance for raid fee");
-            balances[user] -= fee;
+            require(balances[params.user] >= fee, "Insufficient user balance for raid fee");
+            balances[params.user] -= fee;
             
-            cartelCore.raidFor(user, target);
-            emit ActionExecuted(user, "raid", fee);
+            cartelCore.raidFor(params.user, target);
+            emit ActionExecuted(params.user, "raid", fee);
         } 
-        else if (keccak256(bytes(action)) == keccak256(bytes("highStakesRaid"))) {
-            address target = abi.decode(data, (address));
+        else if (keccak256(bytes(params.action)) == keccak256(bytes("highStakesRaid"))) {
+            address target = abi.decode(params.data, (address));
             
             // Get fee dynamically
             uint256 fee = cartelCore.HIGH_STAKES_RAID_FEE();
             
-            require(balances[user] >= fee, "Insufficient user balance for high stakes raid fee");
-            balances[user] -= fee;
+            require(balances[params.user] >= fee, "Insufficient user balance for high stakes raid fee");
+            balances[params.user] -= fee;
             
-            cartelCore.highStakesRaidFor(user, target);
-            emit ActionExecuted(user, "highStakesRaid", fee);
+            cartelCore.highStakesRaidFor(params.user, target);
+            emit ActionExecuted(params.user, "highStakesRaid", fee);
         }
-        else if (keccak256(bytes(action)) == keccak256(bytes("claim"))) {
-             cartelCore.claimYieldFor(user);
-             emit ActionExecuted(user, "claim", 0);
+        else if (keccak256(bytes(params.action)) == keccak256(bytes("claim"))) {
+             cartelCore.claimYieldFor(params.user);
+             emit ActionExecuted(params.user, "claim", 0);
         }
         else {
             revert("Unknown action");

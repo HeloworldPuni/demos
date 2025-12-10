@@ -5,12 +5,21 @@ import "./CartelShares.sol";
 import "./CartelPot.sol";
 import "./IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract CartelCore is Ownable, ReentrancyGuard {
+contract CartelCore is Ownable {
     CartelShares public sharesContract;
     CartelPot public pot;
     IERC20 public immutable usdc;
+    
+    // Manual Reentrancy Guard
+    uint256 private _status; // 1 = unlocked, 2 = locked
+    
+    modifier nonReentrant() {
+        require(_status != 2, "ReentrancyGuard: reentrant call");
+        _status = 2;
+        _;
+        _status = 1;
+    }
     
     uint256 public constant JOIN_SHARES = 100;
     
@@ -73,6 +82,7 @@ contract CartelCore is Ownable, ReentrancyGuard {
         // Owner gets infinite invites
         invites[msg.sender] = type(uint256).max;
         lastDistributionTime = block.timestamp;
+        _status = 1;
     }
 
     modifier onlyAgent() {
@@ -255,42 +265,53 @@ contract CartelCore is Ownable, ReentrancyGuard {
         _highStakesRaid(user, target);
     }
 
+    struct HighStakesVars {
+        uint256 attackerShares;
+        uint256 targetShares;
+        uint256 stealAmount;
+        uint256 selfPenalty;
+    }
+
     function _highStakesRaid(address attacker, address target) internal {
         require(attacker != target, "Cannot raid self");
         require(target != address(0), "Invalid target");
 
-        // 1. Get current share balances
-        uint256 attackerShares = sharesContract.balanceOf(attacker, 1);
-        uint256 targetShares   = sharesContract.balanceOf(target, 1);
+        HighStakesVars memory vars;
 
-        require(targetShares > 0, "Target has no shares");
-        require(attackerShares > 0, "Attacker has no shares");
+        // 1. Get current share balances
+        vars.attackerShares = sharesContract.balanceOf(attacker, 1);
+        vars.targetShares   = sharesContract.balanceOf(target, 1);
+
+        require(vars.targetShares > 0, "Target has no shares");
+        require(vars.attackerShares > 0, "Attacker has no shares");
 
         // 2. Charge high-stakes raid fee
-        pot.depositFrom(msg.sender, HIGH_STAKES_RAID_FEE);
-        dailyRevenuePool += HIGH_STAKES_RAID_FEE;
-        emit RevenueAdded(HIGH_STAKES_RAID_FEE, "high_stakes_raid");
-
-        // 3. Calculate shares to steal
-        uint256 stealAmount = (targetShares * HIGH_STAKES_STEAL_BPS) / 10000;
-        if (stealAmount == 0 && targetShares > 0) {
-            stealAmount = 1;
+        {
+            pot.depositFrom(msg.sender, HIGH_STAKES_RAID_FEE);
+            dailyRevenuePool += HIGH_STAKES_RAID_FEE;
+            emit RevenueAdded(HIGH_STAKES_RAID_FEE, "high_stakes_raid");
         }
-        
-        // 4. Calculate self-penalty
-        uint256 selfPenalty = (attackerShares * HIGH_STAKES_SELF_PENALTY_BPS) / 10000;
+
+        // 3. Calculate shares
+        {
+            vars.stealAmount = (vars.targetShares * HIGH_STAKES_STEAL_BPS) / 10000;
+            if (vars.stealAmount == 0 && vars.targetShares > 0) {
+                vars.stealAmount = 1;
+            }
+            vars.selfPenalty = (vars.attackerShares * HIGH_STAKES_SELF_PENALTY_BPS) / 10000;
+        }
 
         // 5. Apply share movements
-        if (stealAmount > 0) {
-            sharesContract.burn(target, stealAmount);
-            sharesContract.mint(attacker, stealAmount, "");
+        if (vars.stealAmount > 0) {
+            sharesContract.burn(target, vars.stealAmount);
+            sharesContract.mint(attacker, vars.stealAmount, "");
         }
 
-        if (selfPenalty > 0) {
-            sharesContract.burn(attacker, selfPenalty);
+        if (vars.selfPenalty > 0) {
+            sharesContract.burn(attacker, vars.selfPenalty);
         }
 
-        emit HighStakesRaid(attacker, target, stealAmount, selfPenalty, HIGH_STAKES_RAID_FEE);
+        emit HighStakesRaid(attacker, target, vars.stealAmount, vars.selfPenalty, HIGH_STAKES_RAID_FEE);
     }
 
     function retireFromCartel() external nonReentrant {
@@ -301,36 +322,48 @@ contract CartelCore is Ownable, ReentrancyGuard {
         _retireFromCartel(user);
     }
 
+    struct RetireVars {
+        uint256 season;
+        uint256 userShares;
+        uint256 totalShares;
+        uint256 potBalance;
+        uint256 fullSharePayout;
+        uint256 payout;
+    }
+
     function _retireFromCartel(address user) internal {
-        uint256 season = currentSeason;
-        require(!retiredInSeason[season][user], "Already retired this season");
-        require(seasonParticipation[season][user], "User not active in season");
+        RetireVars memory vars;
+        vars.season = currentSeason;
+        require(!retiredInSeason[vars.season][user], "Already retired this season");
+        require(seasonParticipation[user][vars.season], "User not active in season");
 
         // 1. Update profit share
         _updatePendingRewards(user);
 
-        uint256 userShares = sharesContract.balanceOf(user, 1);
-        require(userShares > 0, "No shares to retire");
+        vars.userShares = sharesContract.balanceOf(user, 1);
+        require(vars.userShares > 0, "No shares to retire");
 
-        uint256 totalShares = sharesContract.totalSupply(1);
-        require(totalShares > 0, "No shares in system");
+        {
+            vars.totalShares = sharesContract.totalSupply(1);
+            require(vars.totalShares > 0, "No shares in system");
 
-        // 2. Compute payout
-        uint256 potBalance = pot.getBalance();
-        uint256 fullSharePayout = (potBalance * userShares) / totalShares;
-        uint256 payout = (fullSharePayout * RETIRE_PAYOUT_BPS) / 10000;
-
-        // 3. Burn all user shares
-        sharesContract.burn(user, userShares);
-
-        // 4. Mark retired
-        retiredInSeason[season][user] = true;
-
-        // 5. Transfer payout
-        if (payout > 0) {
-            pot.withdraw(user, payout);
+            // 2. Compute payout
+            vars.potBalance = pot.getBalance();
+            vars.fullSharePayout = (vars.potBalance * vars.userShares) / vars.totalShares;
+            vars.payout = (vars.fullSharePayout * RETIRE_PAYOUT_BPS) / 10000;
         }
 
-        emit RetiredFromCartel(user, season, userShares, payout);
+        // 3. Burn all user shares
+        sharesContract.burn(user, vars.userShares);
+
+        // 4. Mark retired
+        retiredInSeason[vars.season][user] = true;
+
+        // 5. Transfer payout
+        if (vars.payout > 0) {
+            pot.withdraw(user, vars.payout);
+        }
+
+        emit RetiredFromCartel(user, vars.season, vars.userShares, vars.payout);
     }
 }

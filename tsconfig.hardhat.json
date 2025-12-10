@@ -3,5 +3,11 @@
     "compilerOptions": {
         "module": "commonjs",
         "moduleResolution": "node"
-    }
+    },
+    "include": [
+        "contracts",
+        "test",
+        "scripts",
+        "hardhat.config.cjs"
+    ]
 }

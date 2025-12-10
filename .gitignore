@@ -40,3 +40,10 @@ next-env.d.ts
 # sqlite
 *.db
 *.db-journal
+
+# Generated Artifacts
+contracts/compiled/
+artifacts/
+*.log
+*.txt
+infra/
