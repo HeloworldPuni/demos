@@ -3,12 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   devIndicators: false,
   transpilePackages: ['x402', 'x402-express'],
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   async headers() {
     return [
       {
