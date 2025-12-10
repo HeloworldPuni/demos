@@ -1,4 +1,16 @@
 
+"use client";
+
+import { motion, Variants } from "framer-motion";
+import { LANDING_CONTENT } from "./landing-config";
+import Link from "next/link";
+import { IconX, IconBase, IconFarcaster } from "@/components/icons/SocialIcons";
+
+const fadeInUp: Variants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+};
+
 const staggerContainer: Variants = {
     hidden: { opacity: 0 },
     visible: {
