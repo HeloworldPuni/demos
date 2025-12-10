@@ -4,6 +4,8 @@ import "~/app/globals.css";
 import Providers from "~/app/providers";
 import { METADATA } from "~/lib/utils";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: METADATA.name,
   openGraph: {
