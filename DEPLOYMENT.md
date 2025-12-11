@@ -1,16 +1,17 @@
-# Base Cartel Deployment Guide (Remix Edition)
+# Base Cartel Deployment Guide (Base Sepolia Testnet)
 
-This is the **Master Guide** for deploying Base Cartel to **Base Mainnet**.
+This is the **Testnet Guide** for deploying Base Cartel to **Base Sepolia**.
 
 ## 1. Setup in Remix
 1. Go to [Remix IDE](https://remix.ethereum.org).
 2. Create `contracts/` folder in Remix.
 3. Upload these files from your local `contracts/` directory:
+   - `MockUSDC.sol`
    - `CartelShares.sol`
    - `CartelPot.sol`
    - `CartelCore.sol`
    - `AgentVault.sol`
-   - `IERC20.sol` (Dependency)
+   - `IERC20.sol`
 
 ## 2. Compile
 1. Open `CartelCore.sol` in Remix.
@@ -19,35 +20,37 @@ This is the **Master Guide** for deploying Base Cartel to **Base Mainnet**.
 
 ## 3. Deploy (Strict Order)
 Go to **Deploy & Run** tab. Select `Injected Provider - MetaMask`.
-Ensure your wallet is connected to **Base Mainnet**.
+Ensure your wallet is connected to **Base Sepolia**.
 
-> **IMPORTANT**: We use the native USDC on Base.
-> **USDC Address**: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+### Step A: Deploy USDC (Mock)
+- Contract: `MockUSDC`
+- **Deploy** -> Confirm.
+- **Save Address** (e.g. `0xUSDC...`)
 
-### Step A: Deploy Shares
+### Step B: Deploy Shares
 - Contract: `CartelShares`
 - **Deploy** -> Confirm.
 - **Save Address** (e.g. `0xSHARES...`)
 
-### Step B: Deploy Pot
+### Step C: Deploy Pot
 - Contract: `CartelPot`
-- Constructor: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` (USDC Address)
+- Constructor: `0xUSDC...` (MockUSDC Address from Step A)
 - **Deploy** -> Confirm.
 - **Save Address** (e.g. `0xPOT...`)
 
-### Step C: Deploy Core
+### Step D: Deploy Core
 - Contract: `CartelCore`
 - Constructor: 
     - `_shares`: `0xSHARES...`
     - `_pot`: `0xPOT...`
-    - `_usdc`: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+    - `_usdc`: `0xUSDC...`
 - **Deploy** -> Confirm.
 - **Save Address** (e.g. `0xCORE...`)
 
-### Step D: Deploy Agent
+### Step E: Deploy Agent
 - Contract: `AgentVault`
 - Constructor: 
-    - `_usdc`: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+    - `_usdc`: `0xUSDC...`
     - `_core`: `0xCORE...`
 - **Deploy** -> Confirm.
 - **Save Address** (e.g. `0xAGENT...`)
@@ -57,25 +60,25 @@ In Remix "Deployed Contracts" list (expand each contract):
 
 1. **Shares (0xSHARES...)**:
    - Find `setMinter`.
-   - Argument: `0xCORE...` (Address of Core deployed in Step C).
+   - Argument: `0xCORE...`.
    - **Transact**.
 
 2. **Pot (0xPOT...)**:
    - Find `setCore`.
-   - Argument: `0xCORE...` (Address of Core).
+   - Argument: `0xCORE...`.
    - **Transact**.
 
 3. **Core (0xCORE...)**:
    - Find `setAgent`.
-   - Argument 1: `0xAGENT...` (Address of Agent).
-   - Argument 2: `true` (Active status).
+   - Argument 1: `0xAGENT...`.
+   - Argument 2: `true`.
    - **Transact**.
 
 ## 5. Final Config
 Update your Vercel Environment Variables or local `.env.local`:
 
 ```bash
-NEXT_PUBLIC_USDC_ADDRESS=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+NEXT_PUBLIC_USDC_ADDRESS=0xUSDC...
 NEXT_PUBLIC_CARTEL_SHARES_ADDRESS=0xSHARES...
 NEXT_PUBLIC_CARTEL_POT_ADDRESS=0xPOT...
 NEXT_PUBLIC_CARTEL_CORE_ADDRESS=0xCORE...
