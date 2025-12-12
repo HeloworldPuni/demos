@@ -4,19 +4,15 @@ import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
-import { isGodModeEnabled } from '@/lib/dev-mode-client';
-
 export default function AuthenticatedRoute({ children }: { children: React.ReactNode }) {
-    const { isConnected, address } = useAccount();
+    const { isConnected } = useAccount();
     const router = useRouter();
     const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
         // Wait a bit for wagmi to initialize
-        // Also check for God Mode in localStorage
         const timer = setTimeout(() => {
-            const godMode = isGodModeEnabled();
-            if (!isConnected && !godMode) {
+            if (!isConnected) {
                 router.push('/login');
             }
             setIsChecking(false);
@@ -29,8 +25,7 @@ export default function AuthenticatedRoute({ children }: { children: React.React
         return <LoadingScreen />;
     }
 
-    // Double check render logic to avoid flicker
-    if (!isConnected && !isGodModeEnabled()) {
+    if (!isConnected) {
         return null; // Will redirect
     }
 

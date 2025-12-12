@@ -32,7 +32,6 @@ import CartelCoreABI from '@/lib/abi/CartelCore.json';
 import CartelPotABI from '@/lib/abi/CartelPot.json';
 import CartelSharesABI from '@/lib/abi/CartelShares.json';
 import { MOCK_USER } from '@/lib/dev-config';
-import { isGodModeEnabled } from '@/lib/dev-mode-client';
 
 interface CartelDashboardProps {
     address?: string;
@@ -42,11 +41,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     // --- OFF-CHAIN STATE (DB/Index) ---
     const [rank, setRank] = useState<number | null>(null);
     const [highStakesCount, setHighStakesCount] = useState(0);
-    const [isGodMode, setIsGodMode] = useState(false);
 
-    useEffect(() => {
-        setIsGodMode(isGodModeEnabled());
-    }, []);
 
     // --- STATE UI (Modals) ---
     const [isRaidModalOpen, setIsRaidModalOpen] = useState(false);
@@ -113,12 +108,6 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
     // --- FETCH OFF-CHAIN DATA (Rank, Badges) ---
     useEffect(() => {
-        if (isGodModeEnabled() && !address) {
-            setHighStakesCount(MOCK_USER.highStakesCount);
-            setRank(MOCK_USER.rank);
-            return;
-        }
-
         if (address) {
             fetch(`/api/cartel/me/stats?address=${address}`)
                 .then(res => res.json())
@@ -134,11 +123,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
     // --- CLAIM ACTION ---
     const handleClaim = async () => {
-        if (isGodModeEnabled() && !address) {
-            playSound('error');
-            alert("Dev Mode: Claiming is disabled (No Wallet).");
-            return;
-        }
+
         await haptics.medium();
         if (profitAmount > 0) playSound('coin');
         setIsClaiming(true);
