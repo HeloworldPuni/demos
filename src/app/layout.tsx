@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "~/app/globals.css";
 import Providers from "~/app/providers";
+import { WalletControl } from "~/components/WalletControl";
 import { METADATA } from "~/lib/utils";
 
 export const dynamic = 'force-dynamic';
@@ -58,7 +59,10 @@ export default async function RootLayout({
         <link rel="stylesheet" href="/onchainkit.css" />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <WalletControl />
+          {children}
+        </Providers>
         <Analytics />
       </body>
     </html>

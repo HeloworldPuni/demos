@@ -77,12 +77,13 @@ export function LandingHero() {
                             <div className="absolute inset-0 bg-gradient-to-r from-[#3DFF72] to-[#4FF0E6] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </Link>
                     ) : (
-                        <Wallet>
-                            <ConnectWallet className="group relative px-8 py-4 bg-white text-black font-black text-xl rounded-full overflow-hidden hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] border-none">
-                                <span className="relative z-10">{LANDING_CONTENT.hero.cta}</span>
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#3DFF72] to-[#4FF0E6] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            </ConnectWallet>
-                        </Wallet>
+                        <button
+                            onClick={() => document.getElementById('global-wallet-trigger')?.click()}
+                            className="group relative px-8 py-4 bg-white text-black font-black text-xl rounded-full overflow-hidden hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] border-none"
+                        >
+                            <span className="relative z-10">{LANDING_CONTENT.hero.cta}</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#3DFF72] to-[#4FF0E6] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </button>
                     )}
                 </div>
 
