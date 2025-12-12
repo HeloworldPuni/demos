@@ -70,7 +70,11 @@ async function saveEvidence(platform: string, userId: string, action: string, da
     const dir = path.join(process.cwd(), 'artifacts', 'evidence', platform);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-    const filename = `${userId}_${action}_${Date.now()}.json`;
+    // Sanitize inputs to prevent path traversal
+    const safeUserId = userId.replace(/[^a-zA-Z0-9_-]/g, '');
+    const safeAction = action.replace(/[^a-zA-Z0-9_-]/g, '');
+
+    const filename = `${safeUserId}_${safeAction}_${Date.now()}.json`;
     const filePath = path.join(dir, filename);
 
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
