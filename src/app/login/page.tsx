@@ -3,11 +3,12 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAccount } from 'wagmi';
-import { Wallet, ConnectWallet } from '@coinbase/onchainkit/wallet';
+
+import JoinCartel from "@/components/JoinCartel";
 
 export default function LoginPage() {
     const router = useRouter();
-    const { isConnected } = useAccount();
+    const { isConnected, address } = useAccount();
 
     useEffect(() => {
         if (isConnected) {
