@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { LandingHero, FeaturesGrid, HowItWorks, GameplayShowcase, LandingFooter } from "@/components/landing/LandingSections";
+import { LandingHero, FeaturesGrid, HowItWorks, GameplayShowcase, LandingFooter, LandingHeader } from "@/components/landing/LandingSections";
 import { METADATA } from "~/lib/utils";
 
 export const metadata: Metadata = {
@@ -45,6 +45,7 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-[#0B0E12] text-white selection:bg-[#3DFF72] selection:text-black">
+      <LandingHeader />
       <LandingHero />
       <FeaturesGrid />
 
