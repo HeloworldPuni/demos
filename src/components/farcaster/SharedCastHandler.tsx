@@ -12,7 +12,7 @@ import {
 } from "~/components/ui/dialog";
 import { useReadContract } from "wagmi";
 import { NEYNAR_USER_SCORE_ABI, NEYNAR_USER_SCORE_ADDRESS } from "~/lib/contracts/neynar-user-score";
-import { baseSepolia } from "wagmi/chains";
+import { baseSepolia } from "viem/chains";
 
 export function SharedCastHandler() {
     const [isOpen, setIsOpen] = useState(false);

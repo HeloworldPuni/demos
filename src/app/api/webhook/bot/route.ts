@@ -3,7 +3,7 @@ import { NeynarAPIClient, Configuration } from "@neynar/nodejs-sdk";
 
 // Initialize Neynar Client
 const config = new Configuration({
-    apiKey: process.env.NEYNAR_API_KEY || "",
+    apiKey: process.env.NEYNAR_API_KEY || "temp-key", // Prevent init failure during build if env missing
 });
 const neynarClient = new NeynarAPIClient(config);
 
