@@ -21,6 +21,11 @@ export default function Providers({
           mode: 'dark',
           theme: 'default',
         },
+        wallet: {
+          display: 'modal',
+          termsUrl: 'https://www.base.org/terms-of-service',
+          privacyUrl: 'https://www.base.org/privacy-policy',
+        },
       }}
     >
       <FrameProvider>

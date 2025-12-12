@@ -5,6 +5,20 @@ import { motion, Variants } from "framer-motion";
 import { LANDING_CONTENT } from "./landing-config";
 import Link from "next/link";
 import { IconX, IconBase, IconFarcaster } from "@/components/icons/SocialIcons";
+import {
+    Wallet,
+    ConnectWallet,
+    WalletDropdown,
+    WalletDropdownDisconnect,
+    WalletDropdownLink
+} from '@coinbase/onchainkit/wallet';
+import {
+    Avatar,
+    Name,
+    Identity,
+    Address,
+    EthBalance
+} from '@coinbase/onchainkit/identity';
 
 const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 30 },
@@ -24,6 +38,28 @@ const staggerContainer: Variants = {
 export function LandingHero() {
     return (
         <section className="relative min-h-[90vh] flex flex-col items-center justify-center text-center overflow-hidden px-4">
+            {/* Wallet Auth */}
+            <div className="absolute top-6 right-6 z-50">
+                <Wallet>
+                    <ConnectWallet className="bg-zinc-800/80 backdrop-blur-md border border-zinc-700 hover:bg-zinc-700 text-white rounded-full">
+                        <Avatar className="h-6 w-6" />
+                        <Name />
+                    </ConnectWallet>
+                    <WalletDropdown>
+                        <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
+                            <Avatar />
+                            <Name />
+                            <Address />
+                            <EthBalance />
+                        </Identity>
+                        <WalletDropdownLink icon="wallet" href="https://keys.coinbase.com">
+                            Wallet
+                        </WalletDropdownLink>
+                        <WalletDropdownDisconnect />
+                    </WalletDropdown>
+                </Wallet>
+            </div>
+
             {/* Background Elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] animate-pulse" />
