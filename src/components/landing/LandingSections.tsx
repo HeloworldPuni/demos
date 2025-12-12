@@ -38,7 +38,9 @@ const staggerContainer: Variants = {
 };
 
 export function LandingHero() {
+    const { isConnected } = useAccount();
     return (
+
         <section className="relative min-h-[90vh] flex flex-col items-center justify-center text-center overflow-hidden px-4">
             {/* Wallet Auth - MOVED TO HEADER */}
 
@@ -74,11 +76,21 @@ export function LandingHero() {
                 </motion.p>
 
                 <motion.div variants={fadeInUp} className="mt-8">
-                    <Link href="/dashboard" className="group relative px-8 py-4 bg-white text-black font-black text-xl rounded-full overflow-hidden hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-                        <span className="relative z-10">{LANDING_CONTENT.hero.cta}</span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#3DFF72] to-[#4FF0E6] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    </Link>
+                    {isConnected ? (
+                        <Link href="/dashboard" className="group relative px-8 py-4 bg-white text-black font-black text-xl rounded-full overflow-hidden hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] inline-block">
+                            <span className="relative z-10">{LANDING_CONTENT.hero.cta}</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#3DFF72] to-[#4FF0E6] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </Link>
+                    ) : (
+                        <Wallet>
+                            <ConnectWallet className="group relative px-8 py-4 bg-white text-black font-black text-xl rounded-full overflow-hidden hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] border-none">
+                                <span className="relative z-10">{LANDING_CONTENT.hero.cta}</span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-[#3DFF72] to-[#4FF0E6] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            </ConnectWallet>
+                        </Wallet>
+                    )}
                 </motion.div>
+
             </motion.div>
 
             {/* Scroll indicator */}
@@ -284,12 +296,11 @@ export function LandingHeader() {
             {/* Wallet */}
             <div className="pointer-events-auto">
                 <Wallet>
-                    <ConnectWallet className="bg-zinc-800/80 backdrop-blur-md border border-zinc-700 hover:bg-zinc-700 text-white rounded-full transition-all hover:scale-105">
-                        <Avatar className="h-6 w-6" />
-                        <Name />
-                    </ConnectWallet>
+                    {/* Connect Button Removed - Merged into LandingHero CTA */}
+
                     {address && (
                         <WalletDropdown>
+
                             <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
                                 <Avatar />
                                 <Name />
