@@ -13,7 +13,7 @@ export default function AuthenticatedRoute({ children }: { children: React.React
         // Wait a bit for wagmi to initialize
         const timer = setTimeout(() => {
             if (!isConnected) {
-                router.push('/login');
+                router.push('/');
             }
             setIsChecking(false);
         }, 1000); // 1s grace period for connection check

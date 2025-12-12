@@ -295,12 +295,9 @@ export function LandingHeader() {
 
             {/* Wallet */}
             <div className="pointer-events-auto">
-                <Wallet>
-                    {/* Connect Button Removed - Merged into LandingHero CTA */}
-
-                    {address && (
+                {address && (
+                    <Wallet>
                         <WalletDropdown>
-
                             <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
                                 <Avatar />
                                 <Name />
@@ -312,8 +309,8 @@ export function LandingHeader() {
                             </WalletDropdownLink>
                             <WalletDropdownDisconnect />
                         </WalletDropdown>
-                    )}
-                </Wallet>
+                    </Wallet>
+                )}
             </div>
         </header>
     );
