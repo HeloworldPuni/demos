@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "~/app/globals.css";
 import Providers from "~/app/providers";
-import { GlobalWallet } from "~/components/GlobalWallet";
 import { METADATA } from "~/lib/utils";
 
 export const dynamic = 'force-dynamic';
@@ -60,7 +59,6 @@ export default async function RootLayout({
       </head>
       <body>
         <Providers>
-          <GlobalWallet />
           {children}
         </Providers>
         <Analytics />
