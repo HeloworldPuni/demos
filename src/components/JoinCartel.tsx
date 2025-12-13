@@ -204,8 +204,11 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
                         <Button
                             className="w-full bg-[#4A87FF] hover:bg-[#5A97FF] py-4 font-bold"
                             onClick={() => {
-                                const c = connectors[0];
-                                if (c) connect({ connector: c });
+                                const cb = connectors.find(c => c.id === 'coinbaseWalletSDK');
+                                const injected = connectors.find(c => c.id === 'injected');
+                                const target = cb || injected || connectors[0];
+                                if (target) connect({ connector: target });
+                                else alert("No wallet connectors found!");
                             }}
                         >
                             Connect Wallet
