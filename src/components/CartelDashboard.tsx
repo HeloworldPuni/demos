@@ -58,7 +58,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     const SHARES_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_SHARES_ADDRESS as `0x${string}`;
 
     // --- ON-CHAIN READS ---
-    const { data: contractData, refetch } = useReadContracts({
+    const { data: contractData, refetch, error: contractError } = useReadContracts({
         contracts: [
             {
                 address: SHARES_ADDRESS,
@@ -90,6 +90,12 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             }
         ]
     });
+
+    useEffect(() => {
+        if (contractError) {
+            console.error("Dashboard Contract Read Error:", contractError);
+        }
+    }, [contractError]);
 
     const isDevMode = false; // Forced to false for production readiness
 
