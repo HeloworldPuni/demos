@@ -23,13 +23,43 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
+        // AUTO-GENERATE INVITES IF MISSING (Self-Healing)
+        let finalInvites = user.invites;
+
+        if (finalInvites.length === 0) {
+            console.log(`[InvitesAPI] User ${walletAddress} has 0 invites. Generating backups...`);
+            const { v4: uuidv4 } = require('uuid');
+
+            const newInvitesData = Array.from({ length: 3 }).map(() => ({
+                code: 'BASE-' + uuidv4().substring(0, 6).toUpperCase(),
+                creatorId: user.id,
+                type: 'user',
+                maxUses: 1000,
+                status: 'unused'
+            }));
+
+            // Execute creation in transaction to ensure they are saved
+            await prisma.$transaction(
+                newInvitesData.map(inv => prisma.invite.create({ data: inv }))
+            );
+
+            // Fetch again to ensure we have the full objects with timestamps
+            const updatedUser = await prisma.user.findUnique({
+                where: { walletAddress },
+                include: { invites: { orderBy: { createdAt: 'desc' } } }
+            });
+
+            if (updatedUser) {
+                finalInvites = updatedUser.invites;
+            }
+        }
+
         return NextResponse.json({
-            invites: user.invites.map(invite => ({
+            invites: finalInvites.map(invite => ({
                 code: invite.code,
                 status: invite.status,
                 type: invite.type,
                 createdAt: invite.createdAt,
-                // usedAt: invite.usedAt // Removed as it's not on the Invite model directly anymore
             }))
         });
 
