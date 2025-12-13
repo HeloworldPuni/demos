@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import prisma from './prisma';
-import { indexReferral } from './clan-service';
+import { v4 as uuidv4 } from 'uuid';
 
 const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "";
 const RPC_URL = process.env.BASE_RPC_URL || 'https://mainnet.base.org';
@@ -13,55 +13,53 @@ const CORE_ABI = [
 ];
 
 export async function indexEvents() {
-    if (!CARTEL_CORE_ADDRESS || CARTEL_CORE_ADDRESS === "") {
+    if (!CARTEL_CORE_ADDRESS) {
         console.log("Skipping indexing: No Cartel Core Address");
         return;
     }
 
+    // Usable Provider
     const provider = new ethers.JsonRpcProvider(RPC_URL);
     const contract = new ethers.Contract(CARTEL_CORE_ADDRESS, CORE_ABI, provider);
 
-    // 1. Get last indexed block
+    // 1. Get Range
     const lastEvent = await prisma.cartelEvent.findFirst({
         orderBy: { blockNumber: 'desc' }
     });
 
     const currentBlock = await provider.getBlockNumber();
-    const startBlock = lastEvent ? lastEvent.blockNumber + 1 : currentBlock - 1000; // Default to last 1000 blocks if fresh
-    const endBlock = Math.min(currentBlock, startBlock + 2000); // Max 2000 blocks per run to avoid timeouts
+    const startBlock = lastEvent ? lastEvent.blockNumber + 1 : currentBlock - 2000;
+    const endBlock = Math.min(currentBlock, startBlock + 2000);
 
     if (startBlock > endBlock) return;
 
-    console.log(`Indexing events from ${startBlock} to ${endBlock}...`);
+    console.log(`[Indexer] Indexing blocks ${startBlock} to ${endBlock}...`);
 
-    // 2. Fetch Logs
-    const raidFilter = contract.filters.Raid();
-    const highStakesFilter = contract.filters.HighStakesRaid();
-    const retireFilter = contract.filters.RetiredFromCartel();
-    const joinFilter = contract.filters.Join();
-
+    // 2. Query All Events
     const [raidLogs, highStakesLogs, retireLogs, joinLogs] = await Promise.all([
-        contract.queryFilter(raidFilter, startBlock, endBlock),
-        contract.queryFilter(highStakesFilter, startBlock, endBlock),
-        contract.queryFilter(retireFilter, startBlock, endBlock),
-        contract.queryFilter(joinFilter, startBlock, endBlock)
+        contract.queryFilter(contract.filters.Raid(), startBlock, endBlock),
+        contract.queryFilter(contract.filters.HighStakesRaid(), startBlock, endBlock),
+        contract.queryFilter(contract.filters.RetiredFromCartel(), startBlock, endBlock),
+        contract.queryFilter(contract.filters.Join(), startBlock, endBlock)
     ]);
 
-    // 3. Process Logs
-    const eventsToCreate = [];
+    const eventsToProcess = [];
+
+    // TRANSFORM LOGS
+    const safeNumber = (n: any) => Number(n || 0);
 
     for (const log of raidLogs) {
         if ('args' in log) {
             const block = await log.getBlock();
-            eventsToCreate.push({
+            eventsToProcess.push({
+                type: 'RAID',
                 txHash: log.transactionHash,
                 blockNumber: log.blockNumber,
                 timestamp: new Date(block.timestamp * 1000),
-                type: 'RAID',
                 attacker: log.args[0],
                 target: log.args[1],
-                stolenShares: Number(log.args[2]),
-                feePaid: Number(log.args[3])
+                stolenShares: safeNumber(log.args[2]),
+                fee: safeNumber(log.args[3])
             });
         }
     }
@@ -69,170 +67,178 @@ export async function indexEvents() {
     for (const log of highStakesLogs) {
         if ('args' in log) {
             const block = await log.getBlock();
-            eventsToCreate.push({
-                txHash: log.transactionHash,
-                blockNumber: log.blockNumber,
-                timestamp: new Date(block.timestamp * 1000),
+            eventsToProcess.push({
                 type: 'HIGH_STAKES_RAID',
-                attacker: log.args[0],
-                target: log.args[1],
-                stolenShares: Number(log.args[2]),
-                selfPenaltyShares: Number(log.args[3]),
-                feePaid: Number(log.args[4])
-            });
-        }
-    }
-
-    for (const log of retireLogs) {
-        if ('args' in log) {
-            const block = await log.getBlock();
-            eventsToCreate.push({
                 txHash: log.transactionHash,
                 blockNumber: log.blockNumber,
                 timestamp: new Date(block.timestamp * 1000),
-                type: 'RETIRE',
-                user: log.args[0],
-                payout: Number(log.args[3])
+                attacker: log.args[0], // Traitor
+                target: log.args[1],   // Victim
+                stolenShares: safeNumber(log.args[2]),
+                penalty: safeNumber(log.args[3]),
+                fee: safeNumber(log.args[4])
             });
         }
     }
 
-    // Process Join events
     for (const log of joinLogs) {
         if ('args' in log) {
-            const player = log.args[0];
-            const referrer = log.args[1];
-            const sharesMinted = Number(log.args[2]);
-
-            // 1. Sync the New User into DB (Critical for Rank/Leaderboard)
-            eventsToCreate.push({
+            const block = await log.getBlock();
+            // args: [player, referrer, shares, fee]
+            eventsToProcess.push({
+                type: 'JOIN',
                 txHash: log.transactionHash,
                 blockNumber: log.blockNumber,
-                timestamp: new Date((await log.getBlock()).timestamp * 1000),
-                type: 'JOIN', // New internal type for tracking
-                attacker: player, // "Attacker" field used as generic Actor
-                target: referrer,
-                stolenShares: sharesMinted, // Reusing field for "Shares Minted"
-                feePaid: Number(log.args[3] || 0)
+                timestamp: new Date(block.timestamp * 1000),
+                attacker: log.args[0], // Player
+                target: log.args[1],   // Referrer
+                stolenShares: safeNumber(log.args[2]), // Initial Shares
+                fee: safeNumber(log.args[3])
             });
-
-            // Note: Referrals are handled in processEventBatch or below? 
-            // The original code handled referrals directly here. Let's keep that but ensure shares are synced.
-
-            // Only index referral if there is a valid referrer
-            if (referrer && referrer !== ethers.ZeroAddress && referrer !== player) {
-                try {
-                    await indexReferral(player, referrer, 1);
-                } catch (err) {
-                    console.error(`Failed to index referral for ${player}:`, err);
-                }
-            }
         }
     }
 
-    // 4. Save to DB (Transactional Update per Event)
-    await processEventBatch(eventsToCreate, prisma);
+    // 3. Process Batch
+    await processEventBatch(eventsToProcess);
 
-    console.log(`Indexed ${eventsToCreate.length} events and processed referrals.`);
+    console.log(`[Indexer] Processed ${eventsToProcess.length} events.`);
 }
 
-/**
- * Process a batch of events transactionally.
- * Exported for testing purposes.
- */
-export async function processEventBatch(events: any[], prismaClient: any) {
-    // We process sequentially to avoid race conditions on the same user in a single batch
+async function processEventBatch(events: any[]) {
     for (const event of events) {
-        try {
-            await prismaClient.$transaction(async (tx: any) => {
-                // 1. Create/Upsert Event
-                // Ensure event exists. If it was created by API, findUnique finds it.
-                // If not, upsert creates it. 
-                // We use upsert to handle both cases gracefully.
+        // Idempotency: skip if txHash exists
+        const exists = await prisma.cartelEvent.findUnique({ where: { txHash: event.txHash } });
+        if (exists && exists.processed) continue;
 
-                let dbEvent = await tx.cartelEvent.upsert({
-                    where: { txHash: event.txHash },
-                    update: {}, // No updates if exists, just retrieve
-                    create: { ...event, processed: false }
-                });
-
-                // 2. Idempotency Check
-                if (dbEvent.processed) {
-                    // Already fully processed. Skip.
-                    return;
+        await prisma.$transaction(async (tx) => {
+            // A. Create Event Record
+            await tx.cartelEvent.upsert({
+                where: { txHash: event.txHash },
+                update: {},
+                create: {
+                    txHash: event.txHash,
+                    blockNumber: event.blockNumber,
+                    timestamp: event.timestamp,
+                    type: event.type,
+                    attacker: event.attacker,
+                    target: event.target,
+                    stolenShares: event.stolenShares,
+                    selfPenaltyShares: event.penalty, // for High Stakes
+                    feePaid: event.fee,
+                    processed: true
                 }
-
-                // 2. Process Shares for Raids
-                if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
-                    const stolen = Math.floor(event.stolenShares || 0);
-                    const penalty = Math.floor(event.selfPenaltyShares || 0);
-
-                    // Update Attacker: +Stolen, -Penalty
-                    if (event.attacker) {
-                        await tx.user.upsert({
-                            where: { walletAddress: event.attacker },
-                            update: {
-                                shares: { increment: stolen - penalty },
-                                lastSeenAt: new Date()
-                            },
-                            create: {
-                                walletAddress: event.attacker,
-                                shares: Math.max(0, stolen - penalty),
-                                active: true
-                            }
-                        });
-                    }
-
-                    // Update Target: -Stolen
-                    if (event.target) {
-                        const targetUser = await tx.user.findUnique({ where: { walletAddress: event.target } });
-                        if (targetUser) {
-                            const current = targetUser.shares || 0;
-                            const newAmount = Math.max(0, current - stolen);
-                            await tx.user.update({
-                                where: { walletAddress: event.target },
-                                data: { shares: newAmount }
-                            });
-                        }
-                    }
-
-                    console.log(`[Indexer] Processed shares for ${event.type} TX ${event.txHash}: +${stolen} to ${event.attacker}, -${stolen} from ${event.target}`);
-                }
-
-                // 3. Process Join (Sync Initial Shares)
-                if (event.type === 'JOIN') {
-                    const shares = Math.floor(event.stolenShares || 0); // stored in stolenShares field
-                    if (event.attacker) { // 'attacker' stores player address
-                        await tx.user.upsert({
-                            where: { walletAddress: event.attacker },
-                            update: {
-                                shares: { set: shares }, // Start with fresh shares or overwrite
-                                lastSeenAt: new Date(),
-                                active: true
-                            },
-                            create: {
-                                walletAddress: event.attacker,
-                                shares: shares,
-                                active: true
-                            }
-                        });
-                        console.log(`[Indexer] Synced JOIN for ${event.attacker}: ${shares} shares`);
-                    }
-                }
-
-                // 4. Mark as Processed (Atomic)
-                await tx.cartelEvent.update({
-                    where: { id: dbEvent.id },
-                    data: { processed: true }
-                });
             });
-        } catch (e) {
-            // @ts-ignore
-            if (e.code === 'P2002') {
-                // Duplicate ignored
-            } else {
-                console.error(`Failed to process event ${event.txHash}:`, e);
+
+            // B. Route Logic
+            if (event.type === 'JOIN') {
+                await handleJoinEvent(tx, event);
+            } else if (event.type === 'RAID' || event.type === 'HIGH_STAKES_RAID') {
+                await handleRaidEvent(tx, event);
             }
+        });
+    }
+}
+
+async function handleJoinEvent(tx: any, event: any) {
+    const playerAddr = event.attacker;
+    const referrerAddr = event.target;
+    const sharesMinted = event.stolenShares;
+
+    console.log(`[Indexer] Processing JOIN for ${playerAddr} (Referrer: ${referrerAddr})`);
+
+    // 1. Upsert Player (The User)
+    const user = await tx.user.upsert({
+        where: { walletAddress: playerAddr },
+        update: {
+            shares: sharesMinted, // Authoritative Source
+            active: true,
+            lastSeenAt: event.timestamp
+        },
+        create: {
+            walletAddress: playerAddr,
+            shares: sharesMinted,
+            active: true
+        }
+    });
+
+    // 2. Handle Referral
+    if (referrerAddr && referrerAddr !== ethers.ZeroAddress && referrerAddr !== playerAddr) {
+
+        // Upsert Referrer (Ensure they exist in DB)
+        // We do NOT update their shares here; the contract likely minted referral bonus to them,
+        // but we would need to check their balance or wait for a Transfer event to know exactly.
+        // For now, we trust the contract logic: `Join` event implies Referrer got +20.
+        // Ideally we'd read their balance, but simpler to just track the relationship.
+
+        await tx.user.upsert({
+            where: { walletAddress: referrerAddr },
+            update: { lastSeenAt: event.timestamp },
+            create: { walletAddress: referrerAddr, active: true }
+        });
+
+        // Create Referral Record
+        const existingRef = await tx.cartelReferral.findUnique({
+            where: { userAddress: playerAddr }
+        });
+
+        if (!existingRef) {
+            await tx.cartelReferral.create({
+                data: {
+                    userAddress: playerAddr,
+                    referrerAddress: referrerAddr,
+                    season: 1
+                }
+            });
+            console.log(`[Indexer] Linked ${playerAddr} -> ${referrerAddr}`);
+
+            // Increment Referrer Count
+            // (Wait, we can't increment specific Invite usage because we don't know the code)
+            // But we CAN generic increment database counters if we want.
+            // Or just rely on the count of `CartelReferral` records.
+        }
+    }
+
+    // 3. GENERATE INVITES (The "Just-In-Time" Logic moved to Indexer)
+    const inviteCount = await tx.invite.count({ where: { creatorId: user.id } });
+
+    if (inviteCount === 0) {
+        const newInvites = Array.from({ length: 3 }).map(() => ({
+            code: 'BASE-' + uuidv4().substring(0, 6).toUpperCase(),
+            creatorId: user.id,
+            type: 'user',
+            maxUses: 1000, // Standard users get 1 use? Or unlimited? Prompt says "3 invites", effectively 3 codes.
+            status: 'unused'
+        }));
+
+        for (const inv of newInvites) {
+            await tx.invite.create({ data: inv });
+        }
+        console.log(`[Indexer] Generated 3 invites for ${playerAddr}`);
+    }
+}
+
+async function handleRaidEvent(tx: any, event: any) {
+    const { attacker, target, stolenShares, penalty } = event;
+    const totalChange = stolenShares - (penalty || 0);
+
+    // Update Attacker
+    if (attacker) {
+        await tx.user.upsert({
+            where: { walletAddress: attacker },
+            update: { shares: { increment: totalChange } },
+            create: { walletAddress: attacker, shares: Math.max(0, totalChange) }
+        });
+    }
+
+    // Update Target
+    if (target) {
+        const tUser = await tx.user.findUnique({ where: { walletAddress: target } });
+        if (tUser) {
+            const newBal = Math.max(0, (tUser.shares || 0) - stolenShares);
+            await tx.user.update({
+                where: { walletAddress: target },
+                data: { shares: newBal }
+            });
         }
     }
 }

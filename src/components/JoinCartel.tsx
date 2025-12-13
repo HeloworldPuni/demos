@@ -56,15 +56,12 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
     // Auto-login if shares detected on chain
     useEffect(() => {
         if (shareBalance && Number(shareBalance) > 0) {
-            console.log("Found on-chain shares! Syncing and logging in...");
-            // Use the sync API to ensure DB is up to date, then move on
-            fetch('/api/user/sync-from-chain', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ address: address, farcasterId: context?.user?.fid })
-            }).finally(() => {
-                onJoin(inviteCode || "EXISTING");
-            });
+            console.log("Found on-chain shares! Syncing...");
+            // Trigger indexer to ensure DB is up to date
+            fetch('/api/cron/index', { method: 'POST' })
+                .finally(() => {
+                    onJoin(inviteCode || "EXISTING");
+                });
         }
     }, [shareBalance, address, onJoin, context?.user?.fid]);
 
@@ -131,35 +128,22 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
             });
             console.log("Tx Hash:", hash);
 
-            // 4. SYNC TO DB (Only after success)
-            console.log("Tx submitted. Syncing DB...");
+            // 4. TRIGGER INDEXER (The "Sync")
+            console.log("Tx submitted. Triggering Indexer...");
 
-            // Wait a moment for indexer or just optimistic sync?
-            // We call sync-from-chain. It checks RPC. 
-            // If RPC is fast, it works. If not, it might fail to see shares yet.
-            // We'll retry a few times or let the indexer handle it.
-
-            // We'll wait 2 seconds for block propagation (Base is fast)
+            // Wait a moment for block propagation
             await new Promise(r => setTimeout(r, 2000));
 
-            const syncRes = await fetch('/api/user/sync-from-chain', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    address: address,
-                    inviteCode: inviteCode,
-                    farcasterId: context?.user?.fid
-                })
-            });
+            // Trigger the indexer to catch the new Join event
+            await fetch('/api/cron/index', { method: 'POST' });
 
-            // Even if sync "fails" (e.g. RPC lag), the chain tx happened.
-            // The user IS a member. We can optimistically proceed or show success.
-            // But ideally we want the DB to know.
-
+            // Optimistic Update / Completion
             setIsProcessing(false);
             setShowPayment(false);
             setIsLoading(true);
-            setTimeout(() => onJoin(inviteCode), 1000);
+
+            // Allow time for indexer to write DB
+            setTimeout(() => onJoin(inviteCode), 2000);
 
         } catch (error: any) {
             console.error("Join Failed:", error);
