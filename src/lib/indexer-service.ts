@@ -97,16 +97,30 @@ export async function indexEvents() {
         }
     }
 
-    // Process Join events (Referrals)
+    // Process Join events
     for (const log of joinLogs) {
         if ('args' in log) {
             const player = log.args[0];
             const referrer = log.args[1];
+            const sharesMinted = Number(log.args[2]);
 
-            // Only index if there is a valid referrer
+            // 1. Sync the New User into DB (Critical for Rank/Leaderboard)
+            eventsToCreate.push({
+                txHash: log.transactionHash,
+                blockNumber: log.blockNumber,
+                timestamp: new Date((await log.getBlock()).timestamp * 1000),
+                type: 'JOIN', // New internal type for tracking
+                attacker: player, // "Attacker" field used as generic Actor
+                target: referrer,
+                stolenShares: sharesMinted, // Reusing field for "Shares Minted"
+                feePaid: Number(log.args[3] || 0)
+            });
+
+            // Note: Referrals are handled in processEventBatch or below? 
+            // The original code handled referrals directly here. Let's keep that but ensure shares are synced.
+
+            // Only index referral if there is a valid referrer
             if (referrer && referrer !== ethers.ZeroAddress && referrer !== player) {
-                // We assume season 1 for now, or we could fetch it.
-                // Since this is an async background task, we can just use 1.
                 try {
                     await indexReferral(player, referrer, 1);
                 } catch (err) {
@@ -183,6 +197,27 @@ export async function processEventBatch(events: any[], prismaClient: any) {
                     }
 
                     console.log(`[Indexer] Processed shares for ${event.type} TX ${event.txHash}: +${stolen} to ${event.attacker}, -${stolen} from ${event.target}`);
+                }
+
+                // 3. Process Join (Sync Initial Shares)
+                if (event.type === 'JOIN') {
+                    const shares = Math.floor(event.stolenShares || 0); // stored in stolenShares field
+                    if (event.attacker) { // 'attacker' stores player address
+                        await tx.user.upsert({
+                            where: { walletAddress: event.attacker },
+                            update: {
+                                shares: { set: shares }, // Start with fresh shares or overwrite
+                                lastSeenAt: new Date(),
+                                active: true
+                            },
+                            create: {
+                                walletAddress: event.attacker,
+                                shares: shares,
+                                active: true
+                            }
+                        });
+                        console.log(`[Indexer] Synced JOIN for ${event.attacker}: ${shares} shares`);
+                    }
                 }
 
                 // 4. Mark as Processed (Atomic)
