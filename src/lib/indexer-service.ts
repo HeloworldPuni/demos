@@ -65,7 +65,8 @@ export async function indexEvents() {
                 attacker: log.args[0],
                 target: log.args[1],
                 stolenShares: safeNumber(log.args[2]),
-                fee: fee
+                fee: fee,
+                rawArgs: log.args // Capture full args for debugging
             });
         }
     }
@@ -118,6 +119,13 @@ async function processEventBatch(events: any[]) {
 
         console.log(`[Indexer] Processing ${event.type}. FeeRaw: ${event.fee}, Type: ${typeof event.fee}`);
         const feeFinal = event.fee ? Number(event.fee) : 0;
+
+        // DEBUG LOGGING REQUESTED BY USER
+        console.log("INSERTING EVENT:", {
+            type: event.type,
+            feePaid: feeFinal,
+            rawArgs: event.rawArgs ? JSON.stringify(event.rawArgs) : "N/A"
+        });
 
         await prisma.$transaction(async (tx) => {
             // A. Create Event Record
