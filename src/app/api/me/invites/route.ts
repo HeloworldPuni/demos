@@ -6,7 +6,11 @@ import { v4 as uuidv4 } from 'uuid';
 export const dynamic = 'force-dynamic';
 
 const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "";
-const RPC_URL = process.env.BASE_RPC_URL || 'https://mainnet.base.org';
+// Fallback chain: Env Var -> Next Public Env Var -> Base Sepolia (Testnet Default) -> Base Mainnet
+const RPC_URL = process.env.BASE_RPC_URL ||
+    process.env.NEXT_PUBLIC_RPC_URL ||
+    'https://sepolia.base.org'; // Default to Testnet for this phase
+
 
 const ABI = [
     "function balanceOf(address account, uint256 id) view returns (uint256)"
