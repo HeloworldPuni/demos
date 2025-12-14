@@ -13,6 +13,15 @@ import { useFrameContext } from "@/components/providers/FrameProvider";
 import { motion } from "framer-motion";
 import { fadeUp, pulse, motionPage } from "@/components/ui/motionTokens";
 import { SFX, playSound } from "@/lib/audio"; // Audio Import
+import DebugInvites from "@/components/DebugInvites";
+
+const safePlaySound = (sound: any) => {
+    try {
+        playSound(sound);
+    } catch (e) {
+        console.error("Audio error suppressed:", e);
+    }
+};
 
 export default function ProfilePage() {
     const { address } = useAccount();
@@ -151,7 +160,7 @@ export default function ProfilePage() {
                                 animate="animate"
                                 className="w-full bg-[#D4AF37] hover:bg-[#F4E5B8] text-black font-bold h-10 px-4 py-2 rounded-md inline-flex items-center justify-center whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                                 onClick={() => {
-                                    playSound('ping');
+                                    safePlaySound('ping');
                                     setIsReferralOpen(true);
                                 }}
                             >
@@ -172,6 +181,8 @@ export default function ProfilePage() {
                         address={address}
                         referralCount={referralStats?.directInvitesUsed || 0}
                     />
+
+                    <DebugInvites />
                 </motion.div>
             </AppLayout>
         </AuthenticatedRoute>
