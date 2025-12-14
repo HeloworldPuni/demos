@@ -113,9 +113,9 @@ export async function indexEvents() {
 
 async function processEventBatch(events: any[]) {
     for (const event of events) {
-        // Idempotency: skip if txHash exists
+        // Idempotency: We used to skip, but now we allow re-processing to fix data (e.g. fees)
         const exists = await prisma.cartelEvent.findUnique({ where: { txHash: event.txHash } });
-        if (exists && exists.processed) continue;
+        // if (exists && exists.processed) continue; // DISABLED TO FORCE REPAIR
 
         console.log(`[Indexer] Processing ${event.type}. FeeRaw: ${event.fee}, Type: ${typeof event.fee}`);
         const feeFinal = event.fee ? Number(event.fee) : 0;
