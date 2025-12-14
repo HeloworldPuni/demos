@@ -6,7 +6,7 @@ const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "0xD8
 const RPC_URL = process.env.BASE_RPC_URL || 'https://mainnet.base.org';
 
 const CORE_ABI = [
-    "event Raid(address indexed attacker, address indexed target, uint256 stolenShares, uint256 feePaid)",
+    "event Raid(address indexed raider, address indexed target, uint256 amountStolen, bool success, uint256 fee)",
     "event HighStakesRaid(address indexed attacker, address indexed target, uint256 stolenShares, uint256 selfPenaltyShares, uint256 feePaid)",
     "event RetiredFromCartel(address indexed user, uint256 indexed season, uint256 burnedShares, uint256 payout)",
     "event Join(address indexed player, address indexed referrer, uint256 shares, uint256 fee)"
@@ -46,11 +46,17 @@ export async function indexEvents() {
     const eventsToProcess = [];
 
     // TRANSFORM LOGS
-    const safeNumber = (n: any) => Number(n || 0);
+    const safeNumber = (n: any) => {
+        if (n === null || n === undefined) return 0;
+        return Number(n);
+    };
 
     for (const log of raidLogs) {
         if ('args' in log) {
             const block = await log.getBlock();
+            const fee = safeNumber(log.args[4]); // Index 4 is Fee
+            console.log(`[Indexer] Raid found. FeeRaw: ${log.args[4]}, Extracted: ${fee}`);
+
             eventsToProcess.push({
                 type: 'RAID',
                 txHash: log.transactionHash,
@@ -59,7 +65,7 @@ export async function indexEvents() {
                 attacker: log.args[0],
                 target: log.args[1],
                 stolenShares: safeNumber(log.args[2]),
-                fee: safeNumber(log.args[3])
+                fee: fee
             });
         }
     }

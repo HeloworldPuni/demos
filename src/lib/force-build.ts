@@ -1,1 +1,1 @@
-export const BUILD_ID = "18858-indexer-hardcode-fix";
+export const BUILD_ID = "18875-indexer-abi-fix";
