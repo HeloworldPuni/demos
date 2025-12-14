@@ -1,0 +1,5 @@
+{
+    "buildId": "18566-indexer-fix-guaranteed",
+    "reason": "Force deployment of Indexer schema fix",
+    "timestamp": "2025-12-14T14:27:00+05:30"
+}
