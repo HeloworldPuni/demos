@@ -100,7 +100,6 @@ export default function MyClanModal({ isOpen, onClose, address }: MyClanModalPro
                                         className="border-[#4A87FF] text-[#4A87FF] hover:bg-[#4A87FF]/10 shrink-0"
                                         onClick={() => {
                                             navigator.clipboard.writeText(`https://basecartel.in?ref=${summary.inviteCode}`);
-                                            // Just a simple alert for now, could use a toast
                                             alert("Link copied!");
                                         }}
                                     >
@@ -108,8 +107,8 @@ export default function MyClanModal({ isOpen, onClose, address }: MyClanModalPro
                                     </Button>
                                 </div>
                             ) : (
-                                <div className="bg-zinc-900/30 p-4 rounded-lg border border-zinc-800 border-dashed mb-6 text-center text-zinc-500 text-sm">
-                                    Referral codes are being generated. Please check back shortly.
+                                <div className="bg-red-900/20 p-4 rounded-lg border border-red-500/50 mb-6 text-center text-red-400 text-sm">
+                                    ⚠️ No invite codes available. (Are you joined?)
                                 </div>
                             )}
 

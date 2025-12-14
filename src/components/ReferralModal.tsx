@@ -13,30 +13,34 @@ interface ReferralModalProps {
 }
 
 export default function ReferralModal({ isOpen, onClose, address, referralCount = 0 }: ReferralModalProps) {
-    const [inviteLink, setInviteLink] = useState("");
-    const [inviteCode, setInviteCode] = useState("");
-    const [copied, setCopied] = useState(false);
-    const [isLoadingCode, setIsLoadingCode] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (isOpen && address) {
             setIsLoadingCode(true);
+            setError(null);
             const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://basecartel.in';
 
-            // Fetch actual Invite Code
             fetch(`/api/me/invites?walletAddress=${address}`)
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error(res.status === 403 ? "Join the cartel to get invites." : "Failed to load invites.");
+                    return res.json();
+                })
                 .then(data => {
                     if (data.invites && data.invites.length > 0) {
-                        const code = data.invites[0].code; // Use the first code
+                        const code = data.invites[0].code;
                         setInviteCode(code);
                         setInviteLink(`${baseUrl}?ref=${code}`);
+                        setError(null);
                     } else {
-                        // Handle no invites - Prompt user to wait or generating
-                        setInviteLink(""); // Clear link if no code
+                        // V5 Logic: If API didn't return invites, something is wrong or 403 would have triggered.
+                        setError("No invites available. Please try refreshing.");
                     }
                 })
-                .catch(e => console.error("Failed to load invite code", e))
+                .catch(e => {
+                    console.error("Invite load error:", e);
+                    setError(e.message || "Failed to load invites.");
+                })
                 .finally(() => setIsLoadingCode(false));
         }
     }, [isOpen, address]);
@@ -44,74 +48,56 @@ export default function ReferralModal({ isOpen, onClose, address, referralCount 
     if (!isOpen) return null;
 
     const handleCopyLink = () => {
+        if (!inviteLink) return;
         navigator.clipboard.writeText(inviteLink);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const handleShare = () => {
-        sdk.actions.composeCast({
-            text: `Join me in the Base Cartel! Use my referral code ${inviteCode || 'below'} to get bonus shares. 🔴🔵\n\n${inviteLink}`,
-            embeds: [inviteLink]
-        });
-    };
+    // ... (rest of logic)
 
     return (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
             <Card className="w-full max-w-md card-glow border-[#4FF0E6]/40">
-                <CardHeader>
-                    <CardTitle className="text-center text-[#4FF0E6] text-2xl heading-font">
-                        🤝 Refer & Earn
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="space-y-2 text-center">
-                        <p className="text-white text-lg">
-                            Earn <span className="text-[#D4AF37] font-black text-2xl glow-gold">20 Shares</span>
-                        </p>
-                        <p className="text-zinc-400 text-sm">
-                            For every recruit who joins using your link.
-                        </p>
-                    </div>
+                {/* ... Header ... */}
 
-                    <div className="card-glow p-4 rounded-xl space-y-3">
-                        <div className="flex justify-between items-center">
-                            <span className="text-zinc-400 text-sm">Total Referrals</span>
-                            <span className="text-white font-bold">{referralCount}</span>
-                        </div>
-                        <div className="h-px bg-gradient-to-r from-transparent via-[#4A87FF]/20 to-transparent"></div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-zinc-400 text-sm">Bonus Earned</span>
-                            <span className="text-[#3DFF72] font-bold">{referralCount * 20} shares</span>
-                        </div>
-                    </div>
+                <CardContent className="space-y-6">
+                    {/* ... Stats ... */}
 
                     <div className="space-y-2">
-                        <label className="text-zinc-400 text-xs font-medium">Your Referral Link {isLoadingCode && "(Loading...)"}</label>
-                        <div className="flex gap-2">
-                            {inviteLink ? (
-                                <>
-                                    <input
-                                        type="text"
-                                        value={inviteLink}
-                                        readOnly
-                                        className="flex-1 bg-[#0B0E12] border border-[#4A87FF]/30 rounded-lg px-3 py-2 text-sm text-zinc-300 font-mono focus:outline-none"
-                                    />
-                                    <Button
-                                        onClick={handleCopyLink}
-                                        variant="outline"
-                                        className="px-4 border-[#4FF0E6]/40 bg-[#4FF0E6]/10 hover:bg-[#4FF0E6]/20 text-[#4FF0E6]"
-                                    >
-                                        {copied ? "✓" : "Copy"}
-                                    </Button>
-                                </>
-                            ) : (
-                                <div className="flex-1 bg-[#0B0E12] border border-dashed border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-500 font-mono flex items-center justify-center">
-                                    {isLoadingCode ? "Fetching code..." : "Invites being generated..."}
-                                </div>
-                            )}
-                        </div>
+                        <label className="text-zinc-400 text-xs font-medium">Your Referral Link</label>
+
+                        {isLoadingCode ? (
+                            <div className="flex-1 bg-[#0B0E12] border border-[#4A87FF]/30 rounded-lg px-3 py-2 text-sm text-zinc-500 font-mono flex items-center justify-center animate-pulse">
+                                Loading unique codes...
+                            </div>
+                        ) : error ? (
+                            <div className="flex-1 bg-red-900/20 border border-red-500/50 rounded-lg px-3 py-2 text-sm text-red-400 font-mono flex items-center justify-center">
+                                ⚠️ {error}
+                            </div>
+                        ) : inviteLink ? (
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={inviteLink}
+                                    readOnly
+                                    className="flex-1 bg-[#0B0E12] border border-[#4A87FF]/30 rounded-lg px-3 py-2 text-sm text-zinc-300 font-mono focus:outline-none"
+                                />
+                                <Button
+                                    onClick={handleCopyLink}
+                                    variant="outline"
+                                    className="px-4 border-[#4FF0E6]/40 bg-[#4FF0E6]/10 hover:bg-[#4FF0E6]/20 text-[#4FF0E6]"
+                                >
+                                    {copied ? "✓" : "Copy"}
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="flex-1 bg-red-900/20 border border-red-500/50 rounded-lg px-3 py-2 text-sm text-red-400 font-mono flex items-center justify-center">
+                                ⚠️ Unexpected Missing Data
+                            </div>
+                        )}
                     </div>
+
 
                     <div className="flex gap-3">
                         <Button
