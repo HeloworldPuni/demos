@@ -30,7 +30,7 @@ export default function DebugInvites() {
     const pingServer = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/me/invites?ping=true`);
+            const res = await fetch(`/api/me/invites?ping=true&checkDb=true`);
             const text = await res.text();
             setDebugData({ type: 'PING', status: res.status, raw: text });
         } catch (e) {

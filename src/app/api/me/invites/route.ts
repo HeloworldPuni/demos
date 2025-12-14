@@ -25,10 +25,26 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url);
 
         if (searchParams.get('ping') === 'true') {
+            const checkDb = searchParams.get('checkDb') === 'true';
+            let dbStatus = 'skipped';
+            let dbError = null;
+
+            if (checkDb) {
+                try {
+                    await prisma.$queryRaw`SELECT 1`;
+                    dbStatus = 'connected';
+                } catch (e) {
+                    dbStatus = 'failed';
+                    dbError = String(e);
+                }
+            }
+
             return NextResponse.json({
                 status: 'alive',
                 hasHelper: !!CARTEL_SHARES_ADDRESS,
-                rpc: RPC_URL
+                rpc: RPC_URL,
+                dbStatus,
+                dbError
             });
         }
 
