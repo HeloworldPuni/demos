@@ -14,6 +14,10 @@ interface ReferralModalProps {
 
 export default function ReferralModal({ isOpen, onClose, address, referralCount = 0 }: ReferralModalProps) {
     const [error, setError] = useState<string | null>(null);
+    const [inviteCode, setInviteCode] = useState<string | null>(null);
+    const [inviteLink, setInviteLink] = useState<string | null>(null);
+    const [isLoadingCode, setIsLoadingCode] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         if (isOpen && address) {
