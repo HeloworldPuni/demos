@@ -1,1 +1,1 @@
-export const BUILD_ID = "18606-offchain-revenue";
+export const BUILD_ID = "18666-revenue-formatting-fix";

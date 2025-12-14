@@ -109,7 +109,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     const shares = realShares;
     const potBalance = realPotBalance;
     const profitAmount = realProfitAmount;
-    const dailyRevenue = offChainRevenue !== null ? offChainRevenue : realDailyRevenue;
+    const dailyRevenue = offChainRevenue !== null ? (offChainRevenue / 1000000) : realDailyRevenue;
     const totalShares = realTotalShares;
 
     const sharePercentage = totalShares > 0 ? (shares / totalShares) * 100 : 0;
