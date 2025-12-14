@@ -198,23 +198,9 @@ async function handleJoinEvent(tx: any, event: any) {
         }
     }
 
-    // 3. GENERATE INVITES (The "Just-In-Time" Logic moved to Indexer)
-    const inviteCount = await tx.invite.count({ where: { creatorId: user.id } });
-
-    if (inviteCount === 0) {
-        const newInvites = Array.from({ length: 3 }).map(() => ({
-            code: 'BASE-' + uuidv4().substring(0, 6).toUpperCase(),
-            creatorId: user.id,
-            type: 'user',
-            maxUses: 1000, // Standard users get 1 use? Or unlimited? Prompt says "3 invites", effectively 3 codes.
-            status: 'unused'
-        }));
-
-        for (const inv of newInvites) {
-            await tx.invite.create({ data: inv });
-        }
-        console.log(`[Indexer] Generated 3 invites for ${playerAddr}`);
-    }
+    // 3. INVITE GENERATION -> MOVED TO LAZY API (V5)
+    // We no longer generate invites here.
+    // They are generated synchronously on-demand when the user visits the referral UI.
 }
 
 async function handleRaidEvent(tx: any, event: any) {
