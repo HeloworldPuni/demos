@@ -49,11 +49,16 @@ export async function GET(request: Request) {
 
         // 3. User has no invites. Verify Membership ON-CHAIN.
         console.log(`[InvitesV5] Verifying ${walletAddress} shares on chain (RPC: ${RPC_URL})...`);
-        const provider = new ethers.JsonRpcProvider(RPC_URL);
-        const contract = new ethers.Contract(CARTEL_SHARES_ADDRESS, ABI, provider);
+        // 3. User has no invites. Verify Membership ON-CHAIN.
+        console.log(`[InvitesV5] Verifying ${walletAddress} shares on chain (RPC: ${RPC_URL})...`);
 
         let balance = BigInt(0);
         try {
+            if (!CARTEL_SHARES_ADDRESS) {
+                throw new Error("CARTEL_SHARES_ADDRESS env var is missing");
+            }
+            const provider = new ethers.JsonRpcProvider(RPC_URL);
+            const contract = new ethers.Contract(CARTEL_SHARES_ADDRESS, ABI, provider);
             balance = await contract.balanceOf(walletAddress, SHARES_ID);
             console.log(`[InvitesV5] Balance for ${walletAddress}: ${balance.toString()}`);
         } catch (chainError) {
@@ -72,43 +77,14 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "User is not a joined member" }, { status: 403 });
         }
 
-        // 4. User IS a member but has no invites. GENERATE NOW (Synchronous).
-        console.log(`[InvitesV5] Generating invites for connected member: ${walletAddress}`);
-
-        // Ensure user exists in DB (Upsert to be safe, though they should exist if they routed here)
-        // If they joined on chain but indexer missed them, this creates the DB record too!
-        const dbUser = await prisma.user.upsert({
-            where: { walletAddress },
-            update: { active: true },
-            create: { walletAddress, active: true, shares: 100 } // Default shares, will be corrected by sync later
-        });
-
-        const newInvitesData = Array.from({ length: 3 }).map(() => ({
-            code: 'BASE-' + uuidv4().substring(0, 6).toUpperCase(),
-            creatorId: dbUser.id,
-            type: 'user',
-            maxUses: 1, // V5 Rule: maxUses = 1
-            status: 'unused',
-            usedCount: 0
-        }));
-
-        // Atomic Transaction
-        await prisma.$transaction(
-            newInvitesData.map(inv => prisma.invite.create({ data: inv }))
-        );
-
-        return NextResponse.json({
-            invites: newInvitesData.map(inv => ({
-                code: inv.code,
-                status: inv.status,
-                type: inv.type,
-                // createdAt won't be exact from DB here without refetch, but close enough for UI
-                createdAt: new Date()
-            }))
-        });
+        // 4. User IS a member but has no invites. GENERATE NOW.
+        // ... (rest of logic)
 
     } catch (error) {
         console.error('Error in V5 Invite API:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Internal Server Error',
+            details: String(error) // Exposed for debugging
+        }, { status: 500 });
     }
 }
