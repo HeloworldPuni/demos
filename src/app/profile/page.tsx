@@ -13,7 +13,6 @@ import { useFrameContext } from "@/components/providers/FrameProvider";
 import { motion } from "framer-motion";
 import { fadeUp, pulse, motionPage } from "@/components/ui/motionTokens";
 import { SFX, playSound } from "@/lib/audio"; // Audio Import
-import DebugInvites from "@/components/DebugInvites";
 
 const safePlaySound = (sound: any) => {
     try {
@@ -182,7 +181,6 @@ export default function ProfilePage() {
                         referralCount={referralStats?.directInvitesUsed || 0}
                     />
 
-                    <DebugInvites />
                 </motion.div>
             </AppLayout>
         </AuthenticatedRoute>
