@@ -13,7 +13,13 @@ export default function DebugInvites() {
         setLoading(true);
         try {
             const res = await fetch(`/api/me/invites?walletAddress=${address}`);
-            const data = await res.json();
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch {
+                data = { raw: text };
+            }
             setDebugData({ status: res.status, data });
         } catch (e) {
             setDebugData({ error: String(e) });
