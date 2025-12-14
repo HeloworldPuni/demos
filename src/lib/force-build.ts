@@ -1,1 +1,1 @@
-export const BUILD_ID = "18556-fix-indexer-schema";
+export const BUILD_ID = "18606-offchain-revenue";

@@ -43,6 +43,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     // --- OFF-CHAIN STATE (DB/Index) ---
     const [rank, setRank] = useState<number | null>(null);
     const [highStakesCount, setHighStakesCount] = useState(0);
+    const [offChainRevenue, setOffChainRevenue] = useState<number | null>(null);
 
 
     // --- STATE UI (Modals) ---
@@ -108,14 +109,15 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     const shares = realShares;
     const potBalance = realPotBalance;
     const profitAmount = realProfitAmount;
-    const dailyRevenue = realDailyRevenue;
+    const dailyRevenue = offChainRevenue !== null ? offChainRevenue : realDailyRevenue;
     const totalShares = realTotalShares;
 
     const sharePercentage = totalShares > 0 ? (shares / totalShares) * 100 : 0;
     const formattedPct = sharePercentage < 0.01 && sharePercentage > 0 ? "<0.01" : sharePercentage.toFixed(2);
 
-    // --- FETCH OFF-CHAIN DATA (Rank, Badges) ---
+    // --- FETCH OFF-CHAIN DATA (Rank, Badges, Global Revenue) ---
     useEffect(() => {
+        // 1. User Stats
         if (address) {
             fetch(`/api/cartel/me/stats?address=${address}`)
                 .then(res => res.json())
@@ -125,6 +127,16 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 })
                 .catch(err => console.error("Failed to fetch stats:", err));
         }
+
+        // 2. Global Revenue (Off-chain fallback)
+        fetch('/api/cartel/global-stats')
+            .then(res => res.json())
+            .then(data => {
+                if (data.dailyRevenue !== undefined) {
+                    setOffChainRevenue(data.dailyRevenue);
+                }
+            })
+            .catch(err => console.error("Failed to fetch global stats:", err));
     }, [address]);
 
     const { writeContractAsync } = useWriteContract();
