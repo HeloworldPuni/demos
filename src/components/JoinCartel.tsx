@@ -60,11 +60,14 @@ export default function JoinCartel({ onJoin }: JoinCartelProps) {
     useEffect(() => {
         if (shareBalance && Number(shareBalance) > 0) {
             console.log("Found on-chain shares! Syncing...");
-            // Trigger indexer to ensure DB is up to date
-            fetch('/api/cron/index', { method: 'POST' })
-                .finally(() => {
-                    onJoin(inviteCode || "EXISTING");
-                });
+
+            fetch('/api/user/sync-from-chain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address })
+            }).finally(() => {
+                onJoin(inviteCode || "EXISTING");
+            });
         }
     }, [shareBalance, address, onJoin, context?.user?.fid]);
 
