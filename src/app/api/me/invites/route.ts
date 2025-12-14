@@ -55,10 +55,16 @@ export async function GET(request: Request) {
         }
 
         // 1. Resolve User & Check DB Invites
-        const user = await prisma.user.findUnique({
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Database Operation Timed Out (5s)")), 5000)
+        );
+
+        const dbUserPromise = prisma.user.findUnique({
             where: { walletAddress },
             include: { invites: { orderBy: { createdAt: 'desc' } } }
         });
+
+        const user = await Promise.race([dbUserPromise, timeoutPromise]) as any;
 
         // 2. If invites exist, return them IMMEDIATELY (Idempotent)
         if (user && user.invites.length > 0) {
