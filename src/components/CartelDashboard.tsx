@@ -245,14 +245,38 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
                 {/* Earnings */}
                 <motion.div variants={fadeUp} whileHover="hover" whileTap="tap" className="col-span-2">
-                    <StatCard className="border-[#4FF0E6]/20 relative overflow-hidden group flex items-center justify-between px-4 py-3">
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#4FF0E6]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div>
-                            <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wide">Cartel 24h Revenue</div>
-                            <div className="text-2xl font-black text-[#4FF0E6]">${dailyRevenue.toLocaleString()}</div>
-                        </div>
-                        <div className="text-2xl opacity-50 grayscale group-hover:grayscale-0 transition-all">📊</div>
-                    </StatCard>
+                    <div
+                        onClick={() => setShowRevenueChart(!showRevenueChart)}
+                        className="cursor-pointer"
+                    >
+                        <StatCard className={`border-[#4FF0E6]/20 relative overflow-hidden group flex flex-col justify-between px-4 py-3 transition-all duration-300 ${showRevenueChart ? 'h-auto ring-1 ring-[#4FF0E6]/50 bg-zinc-900/80' : ''}`}>
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#4FF0E6]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                            <div className="flex justify-between items-center w-full">
+                                <div>
+                                    <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wide flex items-center gap-1">
+                                        Cartel 24h Revenue
+                                        <span className={`transition-transform duration-300 ${showRevenueChart ? 'rotate-180 text-[#4FF0E6]' : ''}`}>▼</span>
+                                    </div>
+                                    <div className="text-2xl font-black text-[#4FF0E6]">${dailyRevenue.toLocaleString()}</div>
+                                </div>
+                                <div className="text-2xl opacity-50 grayscale group-hover:grayscale-0 transition-all">📊</div>
+                            </div>
+
+                            {/* Chart Expand Area */}
+                            {showRevenueChart && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="w-full pt-4 border-t border-zinc-800/50 mt-3"
+                                    onClick={(e) => e.stopPropagation()} // Prevent closing when clicking chart
+                                >
+                                    <RevenueChart />
+                                </motion.div>
+                            )}
+                        </StatCard>
+                    </div>
                 </motion.div>
 
                 {/* Your Cut (Profit) - Highlighted */}
