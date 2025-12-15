@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/StatCard";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
-import { Copy, Shield, LogOut, ArrowLeft } from "lucide-react";
+import { Copy, Shield, LogOut, ArrowLeft, Users } from "lucide-react";
 
 // Types
 interface ClanDetail {
