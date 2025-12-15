@@ -3,7 +3,8 @@ import prisma from './prisma';
 import { v4 as uuidv4 } from 'uuid';
 
 const CARTEL_CORE_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS || "0xD8E9b929b1a8c43075CDD7580a4a717C0D5530E208";
-const RPC_URL = process.env.BASE_RPC_URL || 'https://mainnet.base.org';
+// Fix: Use Sepolia RPC by default for this testnet deployment
+const RPC_URL = process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC || 'https://sepolia.base.org';
 
 const CORE_ABI = [
     "event Raid(address indexed raider, address indexed target, uint256 amountStolen, bool success, uint256 fee)",
@@ -21,6 +22,9 @@ export async function indexEvents() {
 
     // Usable Provider
     const provider = new ethers.JsonRpcProvider(RPC_URL);
+    // Explicitly set network to ensure we don't accidentally fallback
+    // provider._detectNetwork(); // Ethers v6 auto-detects
+
     const contract = new ethers.Contract(CARTEL_CORE_ADDRESS, CORE_ABI, provider);
 
     // 1. Get Range
@@ -29,10 +33,24 @@ export async function indexEvents() {
     });
 
     const currentBlock = await provider.getBlockNumber();
-    const startBlock = lastEvent ? lastEvent.blockNumber + 1 : currentBlock - 2000;
+    console.log(`[Indexer] Current Chain Block: ${currentBlock}`);
+
+    let startBlock = lastEvent ? lastEvent.blockNumber + 1 : currentBlock - 2000;
+
+    // Safety: If DB is empty or weird, don't start at 0 if chai is huge.
+    // Base Sepolia is ~19M. If startBlock is small, it takes forever.
+    // We only care about Recent History for this Demo.
+    if (startBlock < currentBlock - 10000) {
+        console.log(`[Indexer] DB is too far behind (Block ${startBlock}). Fast-forwarding to tip - 2000.`);
+        startBlock = currentBlock - 2000;
+    }
+
     const endBlock = Math.min(currentBlock, startBlock + 2000);
 
-    if (startBlock > endBlock) return;
+    if (startBlock > endBlock) {
+        console.log("[Indexer] Up to date.");
+        return;
+    }
 
     console.log(`[Indexer] Indexing blocks ${startBlock} to ${endBlock}...`);
 
