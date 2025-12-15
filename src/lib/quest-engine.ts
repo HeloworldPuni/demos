@@ -15,12 +15,16 @@ export class QuestEngine {
             orderBy: { createdAt: 'asc' }
         });
 
-        if (events.length === 0) return;
+        if (events.length === 0) {
+            console.log("[QuestEngine] No pending events found.");
+            return;
+        }
 
-        console.log(`[QuestEngine] Processing ${events.length} events...`);
+        console.log(`[QuestEngine] Found ${events.length} pending events. Processing...`);
 
         // 2. Process Each
         for (const event of events) {
+            console.log(`[QuestEngine] Processing Event ${event.id} type=${event.type} actor=${event.actor}`);
             try {
                 await this.routeEvent(event);
 
@@ -29,9 +33,9 @@ export class QuestEngine {
                     where: { id: event.id },
                     data: { processed: true }
                 });
+                console.log(`[QuestEngine] Event ${event.id} processed successfully.`);
             } catch (error) {
                 console.error(`[QuestEngine] Error processing event ${event.id}:`, error);
-                // We might want to mark 'failed' or retry count in future
             }
         }
     }
@@ -60,26 +64,23 @@ export class QuestEngine {
 
     private static async handleRaid(event: QuestEvent) {
         const actor = event.actor;
-        // Logic: Increment 'daily-raid-once', 'weekly-five-raids'
+        console.log(`[QuestEngine] Handling Raid for ${actor}`);
         await this.incrementProgress(actor, 'daily-raid-once', 1, 'DAILY');
 
-        // Special: If High Stakes
         if (event.type === 'HIGH_STAKES') {
             await this.incrementProgress(actor, 'weekly-high-stakes', 1, 'WEEKLY');
         }
 
-        // Generic: Raids
         await this.incrementProgress(actor, 'weekly-five-raids', 1, 'WEEKLY');
     }
 
     private static async handleJoin(event: QuestEvent) {
-        // New user joined
-        // Maybe 'onboarding' quests?
+        // No quest for joining yet
     }
 
     private static async handleReferral(event: QuestEvent) {
-        const actor = event.actor; // The Referrer
-        // Increment 'refer-1', 'refer-3', etc.
+        const actor = event.actor;
+        console.log(`[QuestEngine] Handling Referral for ${actor}`);
         await this.incrementProgress(actor, 'refer-1', 1, 'SEASONAL');
         await this.incrementProgress(actor, 'refer-3', 1, 'SEASONAL');
         await this.incrementProgress(actor, 'refer-10', 1, 'SEASONAL');
@@ -87,24 +88,38 @@ export class QuestEngine {
 
     private static async handleClaim(event: QuestEvent) {
         const actor = event.actor;
+        console.log(`[QuestEngine] Handling Claim for ${actor}`);
         await this.incrementProgress(actor, 'daily-claim-once', 1, 'DAILY');
     }
 
     // --- CORE LOGIC ---
 
-    private static async incrementProgress(userId: string, questSlug: string, amount: number, frequency: 'DAILY' | 'WEEKLY' | 'SEASONAL' | 'ONE_TIME') {
-        const CURRENT_SEASON = 1; // Helper to get active season
+    private static async incrementProgress(actorAddress: string, questSlug: string, amount: number, frequency: 'DAILY' | 'WEEKLY' | 'SEASONAL' | 'ONE_TIME') {
+        const CURRENT_SEASON = 1;
+
+        // 0. Resolve User (Wallet -> ID)
+        // We need the User's UUID to link to QuestProgress
+        const user = await prisma.user.findUnique({ where: { walletAddress: actorAddress } });
+        if (!user) {
+            console.warn(`[QuestEngine] User not found for address ${actorAddress}. Skipping quest ${questSlug}.`);
+            return;
+        }
 
         // 1. Get Quest Definition
         const quest = await prisma.quest.findUnique({ where: { slug: questSlug } });
-        if (!quest || !quest.isActive) return;
+        if (!quest) {
+            console.warn(`[QuestEngine] Quest not found: ${questSlug}`);
+            return;
+        }
+        if (!quest.isActive) return;
+
+        console.log(`[QuestEngine] Updating ${questSlug} for ${actorAddress} (ID: ${user.id}). +${amount}`);
 
         // 2. Get User Progress
-        // Upsert logic is complex with unique constraints, let's find first
         let progress = await prisma.questProgressV2.findUnique({
             where: {
                 userId_questId_seasonId: {
-                    userId,
+                    userId: user.id, // Correct ID Type
                     questId: quest.id,
                     seasonId: CURRENT_SEASON
                 }
@@ -114,7 +129,7 @@ export class QuestEngine {
         if (!progress) {
             progress = await prisma.questProgressV2.create({
                 data: {
-                    userId,
+                    userId: user.id,
                     questId: quest.id,
                     seasonId: CURRENT_SEASON,
                     currentCount: 0,
@@ -124,7 +139,10 @@ export class QuestEngine {
             });
         }
 
-        if (progress.completed) return; // Already done
+        if (progress.completed) {
+            console.log(`[QuestEngine] Quest ${questSlug} already completed for ${actorAddress}.`);
+            return;
+        }
 
         // 3. Increment
         const newCount = progress.currentCount + amount;
@@ -139,21 +157,22 @@ export class QuestEngine {
         });
 
         if (isCompleted) {
-            console.log(`[QuestEngine] User ${userId} COMPLETED ${questSlug}!`);
-            // Award REP Immediately
+            console.log(`[QuestEngine] User ${actorAddress} COMPLETED ${questSlug}!`);
+
+            // Award REP
             if (quest.rewardRep > 0) {
                 await prisma.user.update({
-                    where: { walletAddress: userId }, // Wait, userId in Progress is ID or Address? 
-                    // Schema says userId String... pointing to User.id.
-                    // But QuestEvent.actor is wallet address.
-                    // IMPORTANT: We need to resolve Actor Address -> User ID.
+                    where: { id: user.id },
+                    data: { rep: { increment: quest.rewardRep } }
                 });
-                // Fixing this logic below
+                console.log(`[QuestEngine] Awarded ${quest.rewardRep} REP to ${actorAddress}`);
             }
 
-            // Queue Shares
+            // Award Shares (Queue)
             if (quest.rewardShares > 0) {
-                // Create PendingShare
+                // Logic for pending shares...
+                // For now just log
+                console.log(`[QuestEngine] Queued ${quest.rewardShares} Shares for ${actorAddress}`);
             }
         }
     }
