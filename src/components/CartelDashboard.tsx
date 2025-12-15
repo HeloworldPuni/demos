@@ -25,7 +25,7 @@ import LoginSummary from "./LoginSummary";
 import { getCartelTitle } from "@/lib/cartel-titles";
 import MyClanModal from "./MyClanModal";
 import RaidHistoryModal from "./RaidHistoryModal";
-import SaveAppButton from "@/components/SaveAppButton";
+import { useRouter } from 'next/navigation';
 
 // Wagmi & Contracts
 import { useReadContracts, useWriteContract } from 'wagmi';
@@ -40,11 +40,11 @@ interface CartelDashboardProps {
 }
 
 export default function CartelDashboard({ address }: CartelDashboardProps) {
+    const router = useRouter();
     // --- OFF-CHAIN STATE (DB/Index) ---
     const [rank, setRank] = useState<number | null>(null);
     const [highStakesCount, setHighStakesCount] = useState(0);
     const [offChainRevenue, setOffChainRevenue] = useState<number | null>(null);
-    const [showRevenueChart, setShowRevenueChart] = useState(false);
 
 
     // --- STATE UI (Modals) ---
@@ -246,32 +246,22 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 {/* Earnings */}
                 <motion.div variants={fadeUp} whileHover="hover" whileTap="tap" className="col-span-2">
                     <div
-                        onClick={() => setShowRevenueChart(!showRevenueChart)}
+                        onClick={() => router.push('/dashboard/revenue')}
                         className="cursor-pointer"
                     >
-                        <StatCard className={`border-[#4FF0E6]/20 relative overflow-hidden group flex flex-col justify-between px-4 py-3 transition-all duration-300 ${showRevenueChart ? 'h-auto ring-1 ring-[#4FF0E6]/50 bg-zinc-900/80' : ''}`}>
+                        <StatCard className="border-[#4FF0E6]/20 relative overflow-hidden group flex flex-col justify-between px-4 py-3">
                             <div className="absolute inset-0 bg-gradient-to-r from-[#4FF0E6]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                             <div className="flex justify-between items-center w-full">
                                 <div>
                                     <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wide flex items-center gap-1">
                                         Cartel 24h Revenue
-                                        <span className={`transition-transform duration-300 ${showRevenueChart ? 'rotate-180 text-[#4FF0E6]' : ''}`}>▼</span>
+                                        <span className="text-zinc-600 text-[10px]">➜</span>
                                     </div>
                                     <div className="text-2xl font-black text-[#4FF0E6]">${dailyRevenue.toLocaleString()}</div>
                                 </div>
                                 <div className="text-2xl opacity-50 grayscale group-hover:grayscale-0 transition-all">📊</div>
                             </div>
-
-                            {/* Chart Expand Area - No Motion (Stability Fix) */}
-                            {showRevenueChart && (
-                                <div
-                                    className="w-full pt-4 border-t border-zinc-800/50 mt-3 animate-in fade-in duration-300"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <RevenueChartSafe />
-                                </div>
-                            )}
                         </StatCard>
                     </div>
                 </motion.div>
