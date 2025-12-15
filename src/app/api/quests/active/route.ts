@@ -32,18 +32,26 @@ export async function GET(request: Request) {
 
         // Fetch V2 Progress
         const CURRENT_SEASON = 1; // TODO: Config
+        // LAZY INDEXING: Trigger if needed (Fire & Forget)
+        // We use a simplified check or just trigger it every X calls/minutes if we had persistence.
+        // For now, let's trigger it asynchronously to ensure freshness without blocking UI too much.
+        // Note: In Vercel serverless, fire-and-forget is tricky, but often works for short tasks.
+        // Better: We rely on the fact that if they are looking at this, they want fresh data.
+
+        // Fix: Use user.id (UUID) not address
         const progressItems = await prisma.questProgressV2.findMany({
             where: {
-                userId: user.walletAddress, // Wait, Schema said userId is String. In V1 it was user.id?
-                // Let's check Schema: `userId String` and `user User @relation`.
-                // If I used `walletAddress` in indexer, I might have messed up relations if `userId` expects UUID.
-                // Let's assume for now I used walletAddress as ID in Indexer or need to resolve it.
-                // Re-checking Schema: `model User { id String @id ... }`.
-                // The Indexer used `walletAddress` as a key for User, but `QuestProgressV2` links to `User`.
-                // If I insert raw address into `userId` field of `QuestProgressV2`, it might fail Foreign Key if it expects `User.id` (UUID).
-                // I need to be careful here. logic in engine needs to resolve address -> id.
+                userId: user.id, // CORRECTED: Uses UUID
                 seasonId: CURRENT_SEASON
             }
+        });
+
+        // Trigger safe background indexing (catch errors to not break UI)
+        // We import dynamically to avoid circular deps if any
+        import('@/lib/indexer-service').then(({ indexEvents }) => {
+            import('@/lib/quest-engine').then(({ QuestEngine }) => {
+                indexEvents().then(() => QuestEngine.processPendingEvents()).catch(e => console.error("Lazy Index Error", e));
+            });
         });
 
         // Map Quests to include Progress
