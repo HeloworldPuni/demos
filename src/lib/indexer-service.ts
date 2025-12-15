@@ -158,7 +158,9 @@ async function processEventBatch(events: any[]) {
         console.log("INSERTING EVENT:", {
             type: event.type,
             feePaid: feeFinal,
-            rawArgs: event.rawArgs ? JSON.stringify(event.rawArgs) : "N/A"
+            rawArgs: event.rawArgs ? JSON.stringify(event.rawArgs, (key, value) =>
+                typeof value === 'bigint' ? value.toString() : value
+            ) : "N/A"
         });
 
         await prisma.$transaction(async (tx) => {

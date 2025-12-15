@@ -6,6 +6,11 @@ import { indexEvents } from '@/lib/indexer-service';
 
 export const dynamic = 'force-dynamic';
 
+// Patch BigInt serialization for JSON response
+(BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+};
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const address = searchParams.get('address');
