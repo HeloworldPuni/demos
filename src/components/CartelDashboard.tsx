@@ -7,6 +7,9 @@ import { CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sword, Users, Skull, Bot, Crosshair, Radio } from "lucide-react";
 
+// Components
+import RaidModal from "@/components/RaidModal";
+
 // Wagmi & Data
 import { useReadContracts } from 'wagmi';
 import { formatUnits } from 'viem';
@@ -20,13 +23,14 @@ interface CartelDashboardProps {
 export default function CartelDashboard({ address }: CartelDashboardProps) {
     // --- STATE ---
     const [revenue24h, setRevenue24h] = useState<number>(0);
+    const [isRaidModalOpen, setIsRaidModalOpen] = useState(false);
 
     // --- CONTRACT ADDRESSES ---
     const POT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`;
     const SHARES_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_SHARES_ADDRESS as `0x${string}`;
 
     // --- ON-CHAIN READS ---
-    const { data: contractData } = useReadContracts({
+    const { data: contractData, refetch } = useReadContracts({
         contracts: [
             {
                 address: SHARES_ADDRESS,
@@ -61,6 +65,16 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
             })
             .catch(err => console.error("Failed to fetch revenue:", err));
     }, []);
+
+    const handleRaidClick = () => {
+        setIsRaidModalOpen(true);
+    };
+
+    const handleModalClose = () => {
+        setIsRaidModalOpen(false);
+        // Optimistic/Lazy refetch on close to see updated stats
+        refetch();
+    };
 
     return (
         <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto pb-32 relative overflow-hidden">
@@ -152,8 +166,12 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
             {/* ACTION BUTTONS */}
             <div className="grid grid-cols-3 gap-2">
-                <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 border-red-500/20 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-400 text-red-500/80 transition-all cursor-not-allowed opacity-80">
-                    <Sword className="w-5 h-5" />
+                <Button
+                    variant="outline"
+                    onClick={handleRaidClick}
+                    className="h-20 flex flex-col items-center justify-center gap-2 border-red-500/20 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-400 text-red-500/80 transition-all group"
+                >
+                    <Sword className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     <span className="text-[10px] font-bold uppercase tracking-wider">Raid</span>
                 </Button>
                 <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/50 hover:text-blue-400 text-blue-500/80 transition-all cursor-not-allowed opacity-80">
@@ -217,6 +235,8 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 </div>
             </div>
 
+            {/* MODALS */}
+            <RaidModal isOpen={isRaidModalOpen} onClose={handleModalClose} />
         </div>
     );
 }
