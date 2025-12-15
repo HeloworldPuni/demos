@@ -262,13 +262,16 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                 </div>
                                 <div className="text-2xl opacity-50 grayscale group-hover:grayscale-0 transition-all">📊</div>
                             </div>
-
+                            {/* Chart Expand Area - No Motion (Stability Fix) */}
+                            {showRevenueChart && (
+                                <div
+                                    className="w-full pt-4 border-t border-zinc-800/50 mt-3 animate-in fade-in duration-300"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <RevenueChart />
+                                </div>
+                            )}
                         </StatCard>
-
-                        {/* TEST: STEP 4 - OUTSIDE STATCARD */}
-                        <div className="w-full pt-4 mt-3">
-                            <RevenueChart />
-                        </div>
                     </div>
                 </motion.div>
 
