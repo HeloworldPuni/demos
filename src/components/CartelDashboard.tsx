@@ -269,7 +269,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                                     className="w-full pt-4 border-t border-zinc-800/50 mt-3 animate-in fade-in duration-300"
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                                    <RevenueChart />
+                                    <RevenueChartSafe />
                                 </div>
                             )}
                         </StatCard>
