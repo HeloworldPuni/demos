@@ -1,1 +1,1 @@
-export const BUILD_ID = "19279-diagnostic-click-alert";
+export const BUILD_ID = "19290-strict-isolation-test";
