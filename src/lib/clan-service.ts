@@ -151,3 +151,81 @@ export class ClanService {
         });
     }
 }
+
+// --- LEGACY REFERRAL SUPPORT (Formerly "Clan System") ---
+// Fixes build error by restoring functions expected by /api/cartel/invites/*
+
+export async function getClanSummary(address: string) {
+    if (!address) throw new Error("Address required");
+
+    // 1. Get Direct Referrals
+    const directs = await prisma.cartelReferral.findMany({
+        where: { referrerAddress: address },
+        include: { user: true }
+    });
+
+    // 2. Get Subtree (BFS for count)
+    let clanMembers = 0;
+    let clanShares = 0;
+
+    // Helper to fetch descendants recursively
+    async function getSubtreeStats(rootAddress: string, depth: number): Promise<void> {
+        if (depth > 5) return; // Cap depth for safety
+
+        const refs = await prisma.cartelReferral.findMany({
+            where: { referrerAddress: rootAddress },
+            include: { user: true }
+        });
+
+        for (const ref of refs) {
+            clanMembers++;
+            clanShares += (ref.user.shares || 0);
+            await getSubtreeStats(ref.userAddress, depth + 1);
+        }
+    }
+
+    await getSubtreeStats(address, 1);
+
+    const directInvitees = directs.map(r => ({
+        address: r.userAddress,
+        joinedAt: r.joinedAt.toISOString(),
+        shares: r.user.shares || 0,
+        raidsBy: 0,
+        highStakesBy: 0
+    }));
+
+    return {
+        address,
+        directInvitesUsed: directs.length,
+        maxInvites: 10,
+        remainingInvites: 10 - directs.length,
+        totalClanMembers: clanMembers,
+        clanTotalShares: clanShares,
+        clanRaidCount: 0,
+        directInvitees
+    };
+}
+
+export async function getClanTree(address: string, maxDepth: number = 2) {
+    async function buildTree(currAddress: string, currentDepth: number): Promise<any[]> {
+        if (currentDepth > maxDepth) return [];
+
+        const referrals = await prisma.cartelReferral.findMany({
+            where: { referrerAddress: currAddress },
+            include: { user: true }
+        });
+
+        const nodes = [];
+        for (const ref of referrals) {
+            const children = await buildTree(ref.userAddress, currentDepth + 1);
+            nodes.push({
+                address: ref.userAddress,
+                shares: ref.user.shares || 0,
+                children
+            });
+        }
+        return nodes;
+    }
+
+    return await buildTree(address, 1);
+}
