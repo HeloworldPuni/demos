@@ -26,39 +26,38 @@ export default function BetrayModal({ isOpen, onClose }: BetrayModalProps) {
         setStep('betraying');
 
         try {
+            // 1. Submit On-Chain Tx
             const hash = await writeContractAsync({
                 address: process.env.NEXT_PUBLIC_CARTEL_CORE_ADDRESS as `0x${string}`,
                 abi: CartelCoreABI,
-                functionName: 'retireFromCartel',
+                functionName: 'retireFromCartel', // Using 'retireFromCartel' as per existing stub, mapped to 'betray' logic
                 args: []
             });
             console.log("Betray Tx:", hash);
 
-            // Record Event for News
-            fetch('/api/cartel/events/record', {
+            // 2. Call API to Cleanup DB & Socials
+            const res = await fetch('/api/pay/betray', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    txHash: hash,
-                    type: 'RETIRE',
-                    attacker: address,
-                    user: address,
-                    payout: 1000 // Mock
+                    traitorAddress: address,
+                    txHash: hash
                 })
             });
 
-            // Optimistic result
-            setTimeout(() => {
-                // In reality we should fetch event logs to get exact payout.
-                // For now, we just indicate success.
-                setPayout(1000); // Mock
-                setStep('result');
-            }, 5000);
+            const data = await res.json();
+
+            if (!res.ok) {
+                console.error("Betrayal API Error:", data.error);
+                // We don't revert UI here because on-chain tx is already sent.
+                // We just proceed to result.
+            }
+
+            setPayout(data.payout || 0); // Use API return or 0
+            setStep('result');
+
         } catch (e) {
             console.error("Betrayal Failed:", e);
-            // Revert state or show error
-            // For now, simple console log and close maybe?
-            // Or stay on verify step.
             setStep('warn');
         }
     };

@@ -9,6 +9,7 @@ import { Sword, Users, Skull, Bot, Crosshair, Radio } from "lucide-react";
 
 // Components
 import RaidModal from "@/components/RaidModal";
+import BetrayModal from "@/components/BetrayModal";
 
 // Wagmi & Data
 import { useReadContracts } from 'wagmi';
@@ -24,6 +25,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     // --- STATE ---
     const [revenue24h, setRevenue24h] = useState<number>(0);
     const [isRaidModalOpen, setIsRaidModalOpen] = useState(false);
+    const [isBetrayModalOpen, setIsBetrayModalOpen] = useState(false);
 
     // --- CONTRACT ADDRESSES ---
     const POT_ADDRESS = process.env.NEXT_PUBLIC_CARTEL_POT_ADDRESS as `0x${string}`;
@@ -182,8 +184,12 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                     <Users className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     <span className="text-[10px] font-bold uppercase tracking-wider">Clan</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 border-zinc-500/20 bg-zinc-500/5 hover:bg-zinc-500/10 hover:border-zinc-500/50 hover:text-zinc-400 text-zinc-500/80 transition-all cursor-not-allowed opacity-80">
-                    <Skull className="w-5 h-5" />
+                <Button
+                    variant="outline"
+                    className="h-20 flex flex-col items-center justify-center gap-2 border-zinc-500/20 bg-zinc-500/5 hover:bg-zinc-500/10 hover:border-zinc-500/50 hover:text-zinc-400 text-zinc-500/80 transition-all group"
+                    onClick={() => setIsBetrayModalOpen(true)}
+                >
+                    <Skull className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     <span className="text-[10px] font-bold uppercase tracking-wider">Betray</span>
                 </Button>
             </div>
@@ -241,6 +247,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
             {/* MODALS */}
             <RaidModal isOpen={isRaidModalOpen} onClose={handleModalClose} />
+            <BetrayModal isOpen={isBetrayModalOpen} onClose={() => setIsBetrayModalOpen(false)} />
         </div>
     );
 }
