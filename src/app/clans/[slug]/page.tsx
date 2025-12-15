@@ -211,7 +211,7 @@ export default function ClanDetailPage({ params }: { params: Promise<{ slug: str
                                     </div>
                                 </div>
                                 <div className="text-[9px] text-zinc-600 font-mono uppercase">
-                                    {new Date(member.joinedAt).toLocaleDateString()}
+                                    {new Date(member.joinedAt).toISOString().split('T')[0]}
                                 </div>
                             </div>
                         ))}
