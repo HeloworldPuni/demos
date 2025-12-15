@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { indexEvents } from '@/lib/indexer-service';
+import { QuestEngine } from '@/lib/quest-engine';
+
 
 export async function GET(request: Request) {
     console.log("CRON ENDPOINT HIT"); // Proof of Life
@@ -15,6 +17,9 @@ export async function GET(request: Request) {
         }
 
         await indexEvents();
+
+        // Trigger Quest Engine to process new events immediately
+        await QuestEngine.processPendingEvents();
 
         return NextResponse.json({ success: true });
     } catch (error) {
