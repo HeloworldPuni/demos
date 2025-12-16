@@ -172,26 +172,32 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 <Button
                     variant="outline"
                     onClick={handleRaidClick}
-                    className="h-20 flex flex-col items-center justify-center gap-2 border-red-500/20 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-400 text-red-500/80 transition-all group"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-red-500 bg-red-950/30 hover:bg-red-900/50 hover:border-red-400 text-red-400 hover:text-red-300 shadow-[0_0_15px_-3px_rgba(239,68,68,0.2)] transition-all group active:scale-95"
                 >
-                    <Sword className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Raid</span>
+                    <div className="p-2 rounded-full bg-red-500/10 group-hover:bg-red-500/20 transition-colors">
+                        <Sword className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-widest">Raid</span>
                 </Button>
                 <Button
                     variant="outline"
-                    className="h-20 flex flex-col items-center justify-center gap-2 border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/50 hover:text-blue-400 text-blue-500/80 transition-all group"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-blue-500 bg-blue-950/30 hover:bg-blue-900/50 hover:border-blue-400 text-blue-400 hover:text-blue-300 shadow-[0_0_15px_-3px_rgba(59,130,246,0.2)] transition-all group active:scale-95"
                     onClick={() => window.location.href = '/clans'}
                 >
-                    <Users className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Clan</span>
+                    <div className="p-2 rounded-full bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                        <Users className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-widest">Clan</span>
                 </Button>
                 <Button
                     variant="outline"
-                    className="h-20 flex flex-col items-center justify-center gap-2 border-zinc-500/20 bg-zinc-500/5 hover:bg-zinc-500/10 hover:border-zinc-500/50 hover:text-zinc-400 text-zinc-500/80 transition-all group"
+                    className="h-24 flex flex-col items-center justify-center gap-2 border-zinc-600 bg-zinc-900/50 hover:bg-zinc-800 hover:border-zinc-400 text-zinc-300 hover:text-white shadow-lg transition-all group active:scale-95"
                     onClick={() => setIsBetrayModalOpen(true)}
                 >
-                    <Skull className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Betray</span>
+                    <div className="p-2 rounded-full bg-zinc-800 group-hover:bg-zinc-700 transition-colors">
+                        <Skull className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-widest">Betray</span>
                 </Button>
             </div>
 
