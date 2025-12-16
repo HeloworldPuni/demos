@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,29 +11,47 @@ import { motionPage } from "@/components/ui/motionTokens";
 // Icons
 import { Sword, Shield, Crosshair } from 'lucide-react';
 
+// Next.js 15+ params are promises (sometimes) but in recent versions type is strict.
+// We use a safe unwrapping pattern or just defensive coding.
 interface PublicProfileProps {
-    params: {
-        address: string;
-    }
+    params: Promise<{ address: string }> | { address: string };
 }
 
 export default function PublicProfilePage({ params }: PublicProfileProps) {
-    // 1. Target Address
-    const targetAddress = params.address as `0x${string}`;
+    // 1. Unwrapping Params (Safe for Next 13-15)
+    // If params is a promise, we should really use `use()` hook but to be safe across versions:
+    // We will assume it might be async in newer Next.
+    const [targetAddress, setTargetAddress] = useState<string>("");
+
+    useEffect(() => {
+        // Handle params whether promise or object
+        Promise.resolve(params).then((p) => {
+            if (p && p.address) {
+                setTargetAddress(p.address);
+            }
+        }).catch(e => console.error("Params Error", e));
+    }, [params]);
 
     // 2. Viewer Address
     const { address: viewerAddress } = useAccount();
-    const isSelf = viewerAddress && viewerAddress.toLowerCase() === targetAddress.toLowerCase();
+
+    // Defensive Check: only compare if both exist and are strings
+    const isSelf = Boolean(
+        viewerAddress &&
+        targetAddress &&
+        typeof viewerAddress === 'string' &&
+        typeof targetAddress === 'string' &&
+        viewerAddress.toLowerCase() === targetAddress.toLowerCase()
+    );
 
     // 3. Resolve Identity
-    const { data: ensName } = useEnsName({ address: targetAddress, chainId: 8453 });
+    const { data: ensName } = useEnsName({ address: targetAddress as `0x${string}`, chainId: 8453 });
     const { data: ensAvatar } = useEnsAvatar({ name: ensName || undefined, chainId: 8453 });
 
-    // 4. Mock Stats (To be wired to API later)
-    // Ideally we fetch from /api/cartel/profile/[address] or similar
-    // For now, let's just show the identity to fix the 404
+    // Mock Display Name
+    const displayName = ensName || (targetAddress ? `${targetAddress.slice(0, 6)}...${targetAddress.slice(-4)}` : "Unknown");
 
-    const displayName = ensName || `${targetAddress.slice(0, 6)}...${targetAddress.slice(-4)}`;
+    if (!targetAddress) return <div className="p-10 text-center text-zinc-500">Loading Subject...</div>;
 
     return (
         <AppLayout>
