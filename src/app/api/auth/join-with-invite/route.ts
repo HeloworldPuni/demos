@@ -77,60 +77,61 @@ export async function POST(request: Request) {
                     // We need referrer's address. invalidInvite.creator is included in the findUnique above?
                     // Yes, include: { creator: true }
                     if (validInvite.creator?.walletAddress) {
-                        data: {
-                            userAddress: walletAddress,
+                        await tx.cartelReferral.create({
+                            data: {
+                                userAddress: walletAddress,
                                 referrerAddress: validInvite.creator.walletAddress,
-                                    season: 1
-                        }
-                    });
+                                season: 1
+                            }
+                        });
 
-        // [FIX] Trigger Quest Event for Referrer
-        await tx.questEvent.create({
-            data: {
-                type: 'REFER',
-                actor: validInvite.creator.walletAddress,
-                data: {
-                    newUserId: newUser.id,
-                    newUserAddress: walletAddress
-                },
-                processed: false
-            }
-        });
-    }
+                        // [FIX] Trigger Quest Event for Referrer
+                        await tx.questEvent.create({
+                            data: {
+                                type: 'REFER',
+                                actor: validInvite.creator.walletAddress,
+                                data: {
+                                    newUserId: newUser.id,
+                                    newUserAddress: walletAddress
+                                },
+                                processed: false
+                            }
+                        });
+                    }
                 }
             }
 
-// Generate 3 new INVITES for the new user (now Referral Codes)
-const newInvites = [];
-for (let i = 0; i < 3; i++) {
-    newInvites.push({
-        code: 'BASE-' + uuidv4().substring(0, 6).toUpperCase(),
-        creatorId: newUser.id,
-        type: 'user',
-        maxUses: 1000, // Effectively unlimited now, treating as referral code
-        status: 'unused'
-    });
-}
+            // Generate 3 new INVITES for the new user (now Referral Codes)
+            const newInvites = [];
+            for (let i = 0; i < 3; i++) {
+                newInvites.push({
+                    code: 'BASE-' + uuidv4().substring(0, 6).toUpperCase(),
+                    creatorId: newUser.id,
+                    type: 'user',
+                    maxUses: 1000, // Effectively unlimited now, treating as referral code
+                    status: 'unused'
+                });
+            }
 
-// SQLite / Postgres createMany handling
-// Since we moved to Postgres, createMany is available but safely keeping loop for now or switching if confirmed.
-// Keeping loop for safety as provider switch might be fresh.
-for (const inv of newInvites) {
-    await tx.invite.create({ data: inv });
-}
+            // SQLite / Postgres createMany handling
+            // Since we moved to Postgres, createMany is available but safely keeping loop for now or switching if confirmed.
+            // Keeping loop for safety as provider switch might be fresh.
+            for (const inv of newInvites) {
+                await tx.invite.create({ data: inv });
+            }
 
-return { user: newUser, newInvites, referrer: validInvite?.creator };
+            return { user: newUser, newInvites, referrer: validInvite?.creator };
         });
 
-return NextResponse.json({
-    success: true,
-    user: result.user,
-    invites: result.newInvites.map(i => i.code),
-    referrerAddress: result.referrer?.walletAddress || "0x0000000000000000000000000000000000000000"
-});
+        return NextResponse.json({
+            success: true,
+            user: result.user,
+            invites: result.newInvites.map(i => i.code),
+            referrerAddress: result.referrer?.walletAddress || "0x0000000000000000000000000000000000000000"
+        });
 
     } catch (error) {
-    console.error('Error joining with invite:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-}
+        console.error('Error joining with invite:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
 }
