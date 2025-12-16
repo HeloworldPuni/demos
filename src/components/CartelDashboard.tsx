@@ -11,6 +11,7 @@ import { Sword, Users, Skull, Bot, Crosshair, Radio } from "lucide-react";
 import RaidModal from "@/components/RaidModal";
 import BetrayModal from "@/components/BetrayModal";
 import MostWantedList from "./MostWantedList";
+import ActivityFeed from "./ActivityFeed";
 
 // Wagmi & Data
 import { useReadContracts } from 'wagmi';
@@ -220,22 +221,9 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
                 <MostWantedList />
             </div>
 
-            {/* LIVE WIRE */}
-            <div>
-                <div className="flex items-center gap-2 mb-2 px-1 text-zinc-500">
-                    <Radio className="w-3 h-3" />
-                    <span className="text-[10px] uppercase tracking-widest">Live Wire</span>
-                </div>
-                <div className="space-y-2 pl-4 border-l border-zinc-800">
-                    <div className="text-[10px] text-zinc-400">
-                        <span className="text-zinc-600 font-mono mr-2">14:02</span>
-                        Signal intercepted...
-                    </div>
-                    <div className="text-[10px] text-zinc-400">
-                        <span className="text-zinc-600 font-mono mr-2">13:59</span>
-                        New block mined.
-                    </div>
-                </div>
+            {/* LIVE ACTIVITY */}
+            <div className="mt-4">
+                <ActivityFeed />
             </div>
 
             {/* MODALS */}
