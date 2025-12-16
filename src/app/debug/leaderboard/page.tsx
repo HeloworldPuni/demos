@@ -52,6 +52,9 @@ export default async function DebugLeaderboardPage() {
                 <div className="border border-zinc-800 p-4 rounded">
                     <h2 className="text-purple-400 font-bold mb-2">4. ENVIRONMENT</h2>
                     <div>Node Env: {process.env.NODE_ENV}</div>
+                    <div className="text-yellow-500 font-mono break-all">
+                        DB Host: {process.env.DATABASE_URL ? process.env.DATABASE_URL.split('@')[1]?.split('/')[0] : 'UNDEFINED'}
+                    </div>
                     {/* Security: Do not print full connection string */}
                     <div>DB Provider: Postgres</div>
                 </div>
