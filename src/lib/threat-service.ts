@@ -93,3 +93,55 @@ export async function getMostWanted(limit: number = 10, windowHours: number = 24
         handle: userMap.get(r.address) || undefined
     }));
 }
+
+export async function getThreatStats(targetAddress: string): Promise<ThreatEntry | null> {
+    // For now, we compute the whole list to find the rank.
+    // Optimization: In future, use a cached leaderboard or SQL view.
+    const list = await getMostWanted(100, 24); // Checking top 100 for rank
+    const found = list.find(e => e.address.toLowerCase() === targetAddress.toLowerCase());
+
+    if (found) return found;
+
+    // If not in top 100, calculate raw stats without rank (or rank > 100)
+    // We do a quick directed query for this specific user
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    // Attacker Events
+    const attacks = await prisma.cartelEvent.groupBy({
+        by: ['type'],
+        where: {
+            attacker: targetAddress,
+            timestamp: { gte: since },
+            type: { in: ['RAID', 'HIGH_STAKES_RAID'] }
+        },
+        _count: true
+    });
+
+    // Victim Events
+    const victimCount = await prisma.cartelEvent.count({
+        where: {
+            target: targetAddress,
+            timestamp: { gte: since },
+            type: { in: ['RAID', 'HIGH_STAKES_RAID'] }
+        }
+    });
+
+    let normal = 0;
+    let high = 0;
+
+    attacks.forEach(a => {
+        if (a.type === 'RAID') normal = a._count;
+        if (a.type === 'HIGH_STAKES_RAID') high = a._count;
+    });
+
+    const threatScore = (normal * 10) + (high * 20) + (victimCount * 5);
+
+    return {
+        rank: 999, // Unranked / >100
+        address: targetAddress,
+        threatScore,
+        normalRaidsInitiated: normal,
+        highStakesRaidsInitiated: high,
+        timesRaided: victimCount
+    };
+}
