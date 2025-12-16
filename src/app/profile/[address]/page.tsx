@@ -7,35 +7,60 @@ import { Button } from "@/components/ui/button";
 import { useAccount, useEnsName, useEnsAvatar } from 'wagmi';
 import { motion } from "framer-motion";
 import { motionPage } from "@/components/ui/motionTokens";
+import RaidModal from "@/components/RaidModal";
+import { ThreatEntry } from '@/lib/threat-service';
 
 // Icons
-import { Sword, Shield, Crosshair } from 'lucide-react';
+import { Sword, Shield, Crosshair, AlertTriangle } from 'lucide-react';
 
-// Next.js 15+ params are promises (sometimes) but in recent versions type is strict.
-// We use a safe unwrapping pattern or just defensive coding.
 interface PublicProfileProps {
     params: Promise<{ address: string }> | { address: string };
 }
 
 export default function PublicProfilePage({ params }: PublicProfileProps) {
     // 1. Unwrapping Params (Safe for Next 13-15)
-    // If params is a promise, we should really use `use()` hook but to be safe across versions:
-    // We will assume it might be async in newer Next.
     const [targetAddress, setTargetAddress] = useState<string>("");
+    const [stats, setStats] = useState<ThreatEntry | null>(null);
+    const [isRaidModalOpen, setIsRaidModalOpen] = useState(false);
+    const [debugLog, setDebugLog] = useState<string[]>([]);
+
+    const addLog = (msg: string) => setDebugLog(prev => [...prev.slice(-4), msg]);
 
     useEffect(() => {
         // Handle params whether promise or object
         Promise.resolve(params).then((p) => {
             if (p && p.address) {
                 setTargetAddress(p.address);
+                addLog(`Params Resolved: ${p.address}`);
+                fetchStats(p.address);
             }
-        }).catch(e => console.error("Params Error", e));
+        }).catch(e => {
+            console.error("Params Error", e);
+            addLog(`Params Error: ${e.message}`);
+        });
     }, [params]);
+
+    const fetchStats = async (addr: string) => {
+        try {
+            addLog(`Fetching stats for ${addr}...`);
+            const res = await fetch(`/api/cartel/profile/stats?address=${addr}`);
+            const data = await res.json();
+            if (data.success) {
+                setStats(data.data);
+                addLog(`Stats Loaded: Threat ${data.data.threatScore}`);
+            } else {
+                addLog(`Stats Failed: ${data.error}`);
+            }
+        } catch (e: any) {
+            console.error("Failed to fetch stats", e);
+            addLog(`Fetch Error: ${e.message}`);
+        }
+    }
 
     // 2. Viewer Address
     const { address: viewerAddress } = useAccount();
 
-    // Defensive Check: only compare if both exist and are strings
+    // Defensive Check for Self
     const isSelf = Boolean(
         viewerAddress &&
         targetAddress &&
@@ -94,7 +119,7 @@ export default function PublicProfilePage({ params }: PublicProfileProps) {
                                     {isSelf && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">YOU</span>}
                                 </div>
                                 <div className="text-xs text-zinc-500 font-mono">
-                                    Base Mainnet
+                                    Base Network
                                 </div>
                             </div>
                         </div>
@@ -107,7 +132,7 @@ export default function PublicProfilePage({ params }: PublicProfileProps) {
                         <Button
                             variant="destructive"
                             className="bg-red-500/10 text-red-500 border border-red-500/50 hover:bg-red-500/20"
-                            disabled // Placeholder for future Raid feature
+                            onClick={() => setIsRaidModalOpen(true)}
                         >
                             <Crosshair className="w-4 h-4 mr-2" />
                             Raid Target
@@ -124,17 +149,48 @@ export default function PublicProfilePage({ params }: PublicProfileProps) {
                     </div>
                 )}
 
-                {/* Placeholder Stats */}
+                {/* Real Stats */}
                 <div className="grid grid-cols-2 gap-3">
                     <div className="bg-zinc-900/50 p-4 rounded border border-zinc-800 text-center">
-                        <div className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Heat</div>
-                        <div className="text-xl font-black text-red-500">???</div>
+                        <div className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Heat (24h)</div>
+                        <div className="text-xl font-black text-red-500">
+                            {stats ? stats.threatScore : (
+                                <span className="animate-pulse text-zinc-700">...</span>
+                            )}
+                        </div>
                     </div>
                     <div className="bg-zinc-900/50 p-4 rounded border border-zinc-800 text-center">
                         <div className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Rank</div>
-                        <div className="text-xl font-black text-zinc-300">#???</div>
+                        <div className="text-xl font-black text-zinc-300">
+                            {stats ? (stats.rank < 100 ? `#${stats.rank}` : ">100") : (
+                                <span className="animate-pulse text-zinc-700">...</span>
+                            )}
+                        </div>
                     </div>
                 </div>
+
+                {/* DEBUG CONSOLE (Requested by User) */}
+                <div className="mt-8 p-4 bg-black border border-red-900/50 font-mono text-[10px] text-red-500/80 rounded">
+                    <div className="flex items-center gap-2 mb-2 pb-2 border-b border-red-900/30">
+                        <AlertTriangle className="w-3 h-3" />
+                        <span className="font-bold">SYSTEM DIAGNOSTICS</span>
+                    </div>
+                    <div className="space-y-1">
+                        {debugLog.map((log, i) => (
+                            <div key={i}>{`> ${log}`}</div>
+                        ))}
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-red-900/30 opacity-50">
+                        RAW DATA: {JSON.stringify(stats || "No Data", null, 0)}
+                    </div>
+                </div>
+
+                <RaidModal
+                    isOpen={isRaidModalOpen}
+                    onClose={() => setIsRaidModalOpen(false)}
+                    targetAddress={targetAddress}
+                    targetName={displayName || "Target"}
+                />
 
             </motion.div>
         </AppLayout>
