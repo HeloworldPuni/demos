@@ -22,13 +22,6 @@ export async function getLeaderboard(limit: number = 20, page: number = 1): Prom
             orderBy: { shares: 'desc' },
             take: limit,
             skip: skip,
-            include: {
-                _count: {
-                    select: {
-                        clanMembers: true
-                    }
-                }
-            }
         }),
         prisma.user.count()
     ]);
