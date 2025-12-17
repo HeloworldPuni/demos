@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { sdk } from "@farcaster/miniapp-sdk";
@@ -43,6 +43,49 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
         args: [address, CARTEL_POT_ADDRESS as `0x${string}`],
         query: { enabled: isOpen && !!address }
     });
+
+    // [NEW] Resolve Target Name
+    const [displayName, setDisplayName] = useState(targetName);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setDisplayName("Unknown Rival"); // Reset
+            return;
+        }
+
+        const resolveName = async () => {
+            // If we already have a name passed in prop, assume it's good (unless it's default)
+            if (targetName !== "Unknown Rival") {
+                setDisplayName(targetName);
+                return;
+            }
+
+            // Otherwise try to resolve address
+            if (targetAddress && targetAddress !== "0x0000000000000000000000000000000000000000") {
+                try {
+                    const res = await fetch(`/api/cartel/user/${targetAddress}`);
+                    const data = await res.json();
+                    if (data.success && data.user.fid) {
+                        // We have an FID, try to fetch Farcaster profile or just show FID
+                        // For speed, let's just show "Farcaster ID #123" if we don't have name
+                        // OR if we stored username, show that.
+                        // But our API only returns FID. Let's try to get name via Neynar/Warpcast if needed,
+                        // or just fallback to "Recruit #{fid}".
+                        // Actually, let's update the API to return the name if possible?
+                        // Re-checking API code... it only selects FID. 
+                        // Let's assume we want to show Farcaster ID for now.
+                        setDisplayName(`Farcaster User #${data.user.fid}`);
+
+                        // Better: Fetch name from Neynar (if we have key) or just stick to FID.
+                        // Let's stick to FID to be safe/fast for now.
+                    }
+                } catch (e) {
+                    console.log("Failed to resolve name", e);
+                }
+            }
+        };
+        resolveName();
+    }, [isOpen, targetAddress, targetName]);
 
     if (!isOpen) return null;
 
@@ -327,7 +370,7 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                     {step === 'confirm' && (
                         <>
                             <p className="text-center text-zinc-300">
-                                Target: <span className="font-bold text-white">{targetName}</span>
+                                Target: <span className="font-bold text-white">{displayName}</span>
                             </p>
 
                             {/* Raid Type Toggle */}
