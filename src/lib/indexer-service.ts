@@ -311,27 +311,71 @@ async function handleJoinEvent(tx: any, event: any) {
 }
 
 async function handleRaidEvent(tx: any, event: any) {
-    const { attacker, target, stolenShares, penalty } = event;
-    const totalChange = stolenShares - (penalty || 0);
+    const { attacker, target } = event;
 
-    // Update Attacker
-    if (attacker) {
-        await tx.user.upsert({
-            where: { walletAddress: attacker },
-            update: { shares: { increment: totalChange } },
-            create: { walletAddress: attacker, shares: Math.max(0, totalChange) }
-        });
-    }
+    // Self-Healing: Fetch actual on-chain balance to ensure DB is in sync
+    // This fixes "frozen" or "desynced" leaderboards by forcing truth from source.
+    try {
+        const provider = new ethers.JsonRpcProvider(RPC_URL);
+        // We know Shares contract address is needed. 
+        // We can get it from Core or Env. 
+        // For now, let's look it up or assuming shares contract is known.
+        // Actually, CartelCore has a publicly readable `sharesContract()` function.
 
-    // Update Target
-    if (target) {
-        const tUser = await tx.user.findUnique({ where: { walletAddress: target } });
-        if (tUser) {
-            const newBal = Math.max(0, (tUser.shares || 0) - stolenShares);
-            await tx.user.update({
-                where: { walletAddress: target },
-                data: { shares: newBal }
+        const core = new ethers.Contract(CARTEL_CORE_ADDRESS, [
+            "function sharesContract() view returns (address)",
+            "function balanceOf(address account, uint256 id) view returns (uint256)" // ERC1155 on shares
+        ], provider);
+
+        const sharesAddr = await core.sharesContract();
+        const sharesMinter = new ethers.Contract(sharesAddr, [
+            "function balanceOf(address account, uint256 id) view returns (uint256)"
+        ], provider);
+
+        // Update Attacker
+        if (attacker) {
+            const actualBal = await sharesMinter.balanceOf(attacker, 1); // ID 1 is the main share
+            await tx.user.upsert({
+                where: { walletAddress: attacker },
+                update: { shares: Number(actualBal) },
+                create: { walletAddress: attacker, shares: Number(actualBal) }
             });
+            console.log(`[Indexer] Synced ${attacker} shares to ${actualBal}`);
+        }
+
+        // Update Target
+        if (target) {
+            const actualBal = await sharesMinter.balanceOf(target, 1);
+            await tx.user.upsert({
+                where: { walletAddress: target },
+                update: { shares: Number(actualBal) },
+                create: { walletAddress: target, shares: Number(actualBal) }
+            });
+            console.log(`[Indexer] Synced ${target} shares to ${actualBal}`);
+        }
+
+    } catch (e) {
+        console.error("Failed to sync on-chain balance, falling back to increment:", e);
+        // FALLBACK: Old Logic
+        const { stolenShares, penalty } = event;
+        const totalChange = stolenShares - (penalty || 0);
+
+        if (attacker) {
+            await tx.user.upsert({
+                where: { walletAddress: attacker },
+                update: { shares: { increment: totalChange } },
+                create: { walletAddress: attacker, shares: Math.max(0, totalChange) }
+            });
+        }
+        if (target) {
+            const tUser = await tx.user.findUnique({ where: { walletAddress: target } });
+            if (tUser) {
+                const newBal = Math.max(0, (tUser.shares || 0) - stolenShares);
+                await tx.user.update({
+                    where: { walletAddress: target },
+                    data: { shares: newBal }
+                });
+            }
         }
     }
 }
