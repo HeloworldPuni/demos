@@ -30,6 +30,19 @@ export default function DashboardPage() {
         }
     });
 
+    // SYNC DB WITH CHAIN (Fixes Leaderboard lag)
+    useEffect(() => {
+        if (address && shareBalance !== undefined) {
+            const currentShares = Number(shareBalance);
+            // Fire and forget sync
+            fetch('/api/cartel/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address, shares: currentShares })
+            }).catch(e => console.error("Sync failed", e));
+        }
+    }, [address, shareBalance]);
+
     const isMember = shareBalance && Number(shareBalance) > 0;
 
     // If loading or just joined, assume member to prevent flash
