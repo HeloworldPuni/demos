@@ -286,9 +286,35 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
 
                 if (receipt.status === 'success') {
                     console.log("Raid confirmed on-chain!");
-                    // Success!
-                    setStolenAmount(0); // We could decode logs here if we wanted exact amount, but 0/Generic is fine for V1
-                    setSelfPenalty(0);
+
+                    // [FIX] Decode Logs to get actual values
+                    const { decodeEventLog } = await import('viem');
+                    let actualStolen = 0;
+                    let actualPenalty = 0;
+
+                    for (const log of receipt.logs) {
+                        try {
+                            const decoded = decodeEventLog({
+                                abi: CartelCoreABI,
+                                data: log.data,
+                                topics: log.topics
+                            });
+
+                            if (decoded.eventName === 'Raid') {
+                                // args: [raider, target, stolenShares, success, fee]
+                                actualStolen = Number(decoded.args.stolenShares);
+                            } else if (decoded.eventName === 'HighStakesRaid') {
+                                // args: [attacker, target, stolenShares, selfPenalty, fee]
+                                actualStolen = Number(decoded.args.stolenShares);
+                                actualPenalty = Number(decoded.args.selfPenalty);
+                            }
+                        } catch (e) {
+                            // Ignore logs from other contracts (USDC, etc)
+                        }
+                    }
+
+                    setStolenAmount(actualStolen);
+                    setSelfPenalty(actualPenalty);
                     setResult('success');
                     setStep('result');
                     setIsProcessing(false);
@@ -447,7 +473,7 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
                             <div className="bg-red-950/50 border border-red-900/50 p-4 rounded-lg space-y-3">
                                 <p className="text-sm text-red-200 leading-relaxed">
-                                    You are about to launch a <span className="font-bold text-red-400">High-Stakes Raid</span> on <span className="font-bold text-white">@{targetName}</span>.
+                                    You are about to launch a <span className="font-bold text-red-400">High-Stakes Raid</span> on <span className="font-bold text-white">@{displayName}</span>.
                                 </p>
                                 <div className="space-y-2 text-xs text-red-300/80">
                                     <div className="flex justify-between">
@@ -496,7 +522,7 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                                 <div className="space-y-4">
                                     <div className="space-y-1">
                                         <p className="text-zinc-300">
-                                            You hit <span className="font-bold text-white">@{targetName}</span> hard.
+                                            You hit <span className="font-bold text-white">@{displayName}</span> hard.
                                         </p>
                                         {raidType === 'high-stakes' && (
                                             <p className="text-xs text-orange-400 font-medium tracking-widest uppercase">Reputation forged in fire</p>
@@ -545,7 +571,7 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
             <PaymentModal
                 isOpen={step === 'payment'}
                 amount={formatUSDC(currentFee)}
-                action={raidType === 'high-stakes' ? `High-Stakes Raid ${targetName}` : `Raid ${targetName}`}
+                action={raidType === 'high-stakes' ? `High-Stakes Raid ${displayName}` : `Raid ${displayName}`}
                 onConfirm={handleConfirmPayment}
                 onCancel={() => setStep('confirm')}
                 isProcessing={isProcessing}
