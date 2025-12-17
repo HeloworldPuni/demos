@@ -55,37 +55,40 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
 
         const resolveName = async () => {
             // If we already have a name passed in prop, assume it's good (unless it's default)
-            if (targetName !== "Unknown Rival") {
+            if (targetName && targetName !== "Unknown Rival") {
                 setDisplayName(targetName);
                 return;
             }
 
-            // Otherwise try to resolve address
-            if (targetAddress && targetAddress !== "0x0000000000000000000000000000000000000000") {
+            // Determine which address to resolve
+            const zeroAddr = "0x0000000000000000000000000000000000000000";
+            let addrToResolve = "";
+
+            if (targetAddress && targetAddress !== zeroAddr) {
+                addrToResolve = targetAddress;
+            } else if (manualTarget && manualTarget.startsWith("0x") && manualTarget.length === 42) {
+                addrToResolve = manualTarget;
+            }
+
+            if (addrToResolve) {
                 try {
-                    const res = await fetch(`/api/cartel/user/${targetAddress}`);
+                    const res = await fetch(`/api/cartel/user/${addrToResolve}`);
                     const data = await res.json();
                     if (data.success && data.user.fid) {
-                        // We have an FID, try to fetch Farcaster profile or just show FID
-                        // For speed, let's just show "Farcaster ID #123" if we don't have name
-                        // OR if we stored username, show that.
-                        // But our API only returns FID. Let's try to get name via Neynar/Warpcast if needed,
-                        // or just fallback to "Recruit #{fid}".
-                        // Actually, let's update the API to return the name if possible?
-                        // Re-checking API code... it only selects FID. 
-                        // Let's assume we want to show Farcaster ID for now.
                         setDisplayName(`Farcaster User #${data.user.fid}`);
-
-                        // Better: Fetch name from Neynar (if we have key) or just stick to FID.
-                        // Let's stick to FID to be safe/fast for now.
+                    } else {
+                        // Fallback to truncated address if no FID found
+                        setDisplayName(`${addrToResolve.slice(0, 6)}...${addrToResolve.slice(-4)}`);
                     }
                 } catch (e) {
                     console.log("Failed to resolve name", e);
+                    // Fallback
+                    setDisplayName(`${addrToResolve.slice(0, 6)}...${addrToResolve.slice(-4)}`);
                 }
             }
         };
         resolveName();
-    }, [isOpen, targetAddress, targetName]);
+    }, [isOpen, targetAddress, targetName, manualTarget]);
 
     if (!isOpen) return null;
 
@@ -301,12 +304,16 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                             });
 
                             if (decoded.eventName === 'Raid') {
-                                // args: [raider, target, stolenShares, success, fee]
-                                actualStolen = Number(decoded.args.stolenShares);
+                                // args: [raider, target, amountStolen, success, fee]
+                                // NOTE: Parameter name is 'amountStolen' in Raid event, NOT 'stolenShares'
+                                const val = decoded.args.amountStolen || decoded.args.stolenShares || 0n;
+                                actualStolen = Number(val);
                             } else if (decoded.eventName === 'HighStakesRaid') {
                                 // args: [attacker, target, stolenShares, selfPenalty, fee]
-                                actualStolen = Number(decoded.args.stolenShares);
-                                actualPenalty = Number(decoded.args.selfPenalty);
+                                // NOTE: Parameter name is 'stolenShares' in HighStakesRaid event
+                                const val = decoded.args.stolenShares || 0n;
+                                actualStolen = Number(val);
+                                actualPenalty = Number(decoded.args.selfPenalty || 0n);
                             }
                         } catch (e) {
                             // Ignore logs from other contracts (USDC, etc)
@@ -348,9 +355,9 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
         let text = "";
 
         if (raidType === 'normal') {
-            text = `I just raided @${targetName} and stole ${stolenAmount} shares in Base Cartel on Base ⚡\n\nCome at me: ${gameUrl}`;
+            text = `I just raided @${displayName} and stole ${stolenAmount} shares in Base Cartel on Base ⚡\n\nCome at me: ${gameUrl}`;
         } else {
-            text = `🔥 High-Stakes Raid success!\nI hit @${targetName}, stole ${stolenAmount} shares and burned ${selfPenalty} of my own in Base Cartel.\n\nDare to try? ${gameUrl}`;
+            text = `🔥 High-Stakes Raid success!\nI hit @${displayName}, stole ${stolenAmount} shares and burned ${selfPenalty} of my own in Base Cartel.\n\nDare to try? ${gameUrl}`;
         }
 
         const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
