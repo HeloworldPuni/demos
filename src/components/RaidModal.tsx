@@ -273,42 +273,36 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                 })
             }).catch(err => console.error("Heat Event Record Failed:", err));
 
-            // POLL FOR INDEXER CONFIRMATION
-            let attempts = 0;
-            const maxAttempts = 20; // 60s approx
+            // [PERFORMANCE FIX]
+            // Don't wait for the slow indexer. Wait for the chain directly.
+            // As soon as the block is mined, the raid is real.
+            console.log("Waiting for chain confirmation...");
 
-            const pollInterval = setInterval(async () => {
-                attempts++;
-                try {
-                    const res = await fetch(`/api/indexer/event-status?txHash=${hash}`);
-                    const data = await res.json();
+            if (publicClient) {
+                const receipt = await publicClient.waitForTransactionReceipt({
+                    hash: hash,
+                    confirmations: 1
+                });
 
-                    if (data.processed) {
-                        clearInterval(pollInterval);
-
-                        // Success!
-                        setStolenAmount(0); // Dashboard will have real value, here just generic msg or 0
-                        setSelfPenalty(0);
-                        setResult('success');
-                        setStep('result');
-                        setIsProcessing(false);
-                    } else {
-                        console.log(`Polling... Attempt ${attempts}/${maxAttempts}`);
-                    }
-                } catch (e) {
-                    console.error("Poll Error", e);
-                }
-
-                if (attempts >= maxAttempts) {
-                    clearInterval(pollInterval);
-                    // Timeout -> Show Result anyway (Optimistic fallback)
-                    // Or keep waiting? Let's show result but maybe log it.
-                    console.log("Polling timed out, showing result optimistically.");
+                if (receipt.status === 'success') {
+                    console.log("Raid confirmed on-chain!");
+                    // Success!
+                    setStolenAmount(0); // We could decode logs here if we wanted exact amount, but 0/Generic is fine for V1
+                    setSelfPenalty(0);
                     setResult('success');
                     setStep('result');
                     setIsProcessing(false);
+                } else {
+                    throw new Error("Transaction reverted on chain.");
                 }
-            }, 1000); // 1s polling for faster UI feedback
+            } else {
+                // Fallback if no public client (rare)
+                console.warn("No public client, waiting artificial delay.");
+                await new Promise(r => setTimeout(r, 4000));
+                setResult('success');
+                setStep('result');
+                setIsProcessing(false);
+            }
 
         } catch (e) {
             console.error("Raid Failed:", e);
