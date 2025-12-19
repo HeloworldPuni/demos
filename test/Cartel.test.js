@@ -7,7 +7,7 @@ describe("Base Cartel", function () {
     let owner, addr1, addr2;
 
     const JOIN_FEE = 10n * 10n ** 6n; // 10 USDC
-    const RAID_FEE = 5000n;  // 0.005 USDC
+    const RAID_FEE = 5n * 10n ** 6n;  // 5 USDC
     const JOIN_SHARES = 100n;
 
     beforeEach(async function () {
@@ -66,6 +66,12 @@ describe("Base Cartel", function () {
         expect(await pot.getBalance()).to.equal(JOIN_FEE + RAID_FEE);
     });
 
+    it("Should emit Betrayal event", async function () {
+        await core.connect(addr1).join(ethers.ZeroAddress);
 
+        await expect(core.connect(addr1).betray())
+            .to.emit(core, "Betrayal")
+            .withArgs(addr1.address, 0);
+    });
 });
 

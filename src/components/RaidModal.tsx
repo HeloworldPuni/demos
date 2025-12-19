@@ -313,7 +313,7 @@ export default function RaidModal({ isOpen, onClose, targetName = "Unknown Rival
                                 // NOTE: Parameter name is 'stolenShares' in HighStakesRaid event
                                 const val = decoded.args.stolenShares || 0n;
                                 actualStolen = Number(val);
-                                actualPenalty = Number(decoded.args.selfPenaltyShares || 0n);
+                                actualPenalty = Number(decoded.args.selfPenalty || 0n);
                             }
                         } catch (e) {
                             // Ignore logs from other contracts (USDC, etc)

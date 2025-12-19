@@ -5,7 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ThreatBar } from "@/components/ui/ThreatBar";
-import { useViewProfile } from '@coinbase/onchainkit/minikit';
+
+interface ThreatEntry {
+    rank: number;
+    address: string;
+    handle?: string;
+    threatScore: number;
+    normalRaidsInitiated: number;
+    highStakesRaidsInitiated: number;
+    timesRaided: number;
+}
 
 interface ThreatEntry {
     rank: number;
@@ -17,6 +26,8 @@ interface ThreatEntry {
     timesRaided: number;
     fid?: string; // Add FID to interface
 }
+
+import { useViewProfile } from '@coinbase/onchainkit/minikit';
 
 function ThreatRow({ player, formatAddress }: { player: ThreatEntry, formatAddress: (addr: string) => string }) {
     // Gracefully handle missing hook context
@@ -65,10 +76,10 @@ export default function MostWantedBoard() {
     const fetchMostWanted = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/cartel/most-wanted?window=${windowHours}&limit=5`);
+            const res = await fetch(`/api/cartel/most-wanted?windowHours=${windowHours}&limit=5`);
             const data = await res.json();
-            if (data.data) {
-                setPlayers(data.data);
+            if (data.players) {
+                setPlayers(data.players);
             }
         } catch (error) {
             console.error("Failed to fetch most wanted:", error);
