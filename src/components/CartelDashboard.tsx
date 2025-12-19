@@ -10,7 +10,8 @@ import { Sword, Users, Skull, Bot, Crosshair, Radio } from "lucide-react";
 // Components
 import RaidModal from "@/components/RaidModal";
 import BetrayModal from "@/components/BetrayModal";
-import MostWantedList from "./MostWantedList";
+
+import MostWantedBoard from "./MostWantedBoard";
 import ActivityFeed from "./ActivityFeed";
 
 // Wagmi & Data
@@ -236,7 +237,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
 
             {/* MOST WANTED */}
             <div className="mt-4">
-                <MostWantedList />
+                <MostWantedBoard />
             </div>
 
             {/* LIVE ACTIVITY */}

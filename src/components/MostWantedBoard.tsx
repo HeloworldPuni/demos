@@ -76,7 +76,7 @@ export default function MostWantedBoard() {
     const fetchMostWanted = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/cartel/most-wanted?windowHours=${windowHours}&limit=5`);
+            const res = await fetch(`/api/cartel/most-wanted?window=${windowHours}&limit=5`);
             const data = await res.json();
             if (data.players) {
                 setPlayers(data.players);

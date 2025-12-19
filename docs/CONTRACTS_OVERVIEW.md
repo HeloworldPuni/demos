@@ -2,45 +2,39 @@
 
 This document provides a technical overview of the Base Cartel smart contract system.
 
-## 1. CartelCore.sol
+## 1. CartelCore.sol (V2)
 **Role:** The main game logic controller. Handles joining, raiding, fees, and profit distribution.
+
+### Key Features (V2)
+*   **Activity-Based Yield:** Shares are "Score" (Non-Yielding) by default. Users must `raid` (pay fees) to unlock Yield.
+    *   *Mechanism*: `join/refer` = Locked Shares. `raid` = Unlocks 10 Yield Shares.
+*   **Accumulator Claim System:** Uses `accUSDCPerShare` for scalable, O(1) profit distribution.
+    *   *Math*: `Pending = (yieldShares * acc) - debt`.
+*   **Commit-Reveal RNG:** Prevents raid simulation cheating.
+    *   *Flow*: `commitRaid` (User) -> Wait 1 block -> `revealRaid` (Keeper/User).
 
 ### Storage Variables
 *   `sharesContract` (CartelShares): Reference to the ERC1155 shares contract.
 *   `pot` (CartelPot): Reference to the treasury contract holding USDC.
 *   `usdc` (IERC20): Reference to the USDC token contract.
-*   `JOIN_SHARES` (uint256): Constant amount of shares (100) minted upon joining.
-*   `currentSeason` (uint256): Tracks the current game season (default: 1).
-*   `seasonParticipation` (mapping): Tracks if a user has joined a specific season.
-*   `referredBy` (mapping): Stores who invited whom.
-*   `referralCount` (mapping): Tracks how many users each person has invited.
-*   `REFERRAL_BONUS` (uint256): Shares given to referrer (20).
-*   `JOIN_FEE` (uint256): Cost to join (0 for Phase 1).
-*   `RAID_FEE` (uint256): Cost to raid (5000 = 0.005 USDC).
-*   `inviteOnly` (bool): If true, requires a valid referrer to join.
-*   `invites` (mapping): Tracks number of invites each user has available.
-*   `authorizedAgents` (mapping): Addresses allowed to execute actions on behalf of users.
-*   `dailyRevenuePool` (uint256): Accumulates fees for daily distribution.
-*   `lastDistributionTime` (uint256): Timestamp of last profit distribution.
-*   `cumulativeRewardPerShare` (uint256): Global tracker for profit per share.
-*   `pendingRewards` (mapping): Unclaimed rewards for each user.
+*   `JOIN_SHARES` (uint256): Shares (100) minted upon joining (Non-Yielding).
+*   `accUSDCPerShare` (uint256): Global accumulator for yield.
+*   `yieldShares` (mapping): Amount of shares unlocked for yield per user.
+*   `rewardDebt` (mapping): User's debt for accumulator math.
+*   `JOIN_FEE` (uint256): Cost to join (0).
+*   `RAID_FEE` (uint256): Cost to raid (5000 = 0.005 USDC). Unlocks 10 Yield Shares.
+*   `pendingRaids` (mapping): Stores commit data for RNG.
 
 ### Functions
-*   `setAgent(address agent, bool status)`
-    *   **Admin:** Authorizes or revokes an address (e.g., AgentVault) to act as an agent.
-*   `setFees(uint256 _joinFee, uint256 _raidFee)`
-    *   **Admin:** Updates the cost to join or raid.
-*   `setInviteOnly(bool _enabled)`
-    *   **Admin:** Toggles the invite-only requirement.
-*   `grantInvites(address user, uint256 amount)`
-    *   **Admin:** Manually gives invites to a specific user.
 *   `join(address referrer)`
-    *   **Public:** Main entry point. Mints initial shares, handles fees, and processes referrals.
-*   `getReferralCount(address user)`
-*   `burn(address account, uint256 amount)`
-    *   **Minter Only:** Burns shares from an account.
-*   `setURI(string memory newuri)`
-    *   **Admin:** Updates the metadata URI for the tokens.
+    *   **Public:** Mints 100 Shares (Score). Grants 0 Yield. Checks referrer is active.
+*   `commitRaid(address target)`
+    *   **Public:** Starts a raid. Pays fee. Stores hash(block + user).
+*   `revealRaid(bytes32 requestId)`
+    *   **Public:** Resolves raid using blockhash. Unlocks Yield. Steals shares.
+*   `claimProfit()`
+    *   **Public:** Payouts USDC based on `yieldShares`.
+
 
 ---
 
