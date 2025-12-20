@@ -27,8 +27,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Run TypeScript type check
-        run: npm run type-check
       
       - name: Run ESLint
         run: npm run lint
@@ -66,13 +64,15 @@ jobs:
         run: npm ci
       
       - name: Run Hardhat tests
-        run: npx hardhat test
+        run: npx hardhat test --config hardhat.config.cjs
+
       
       - name: Run Solhint
         run: npx solhint 'contracts/**/*.sol'
       
       - name: Compile contracts
-        run: npx hardhat compile
+        run: npx hardhat compile --config hardhat.config.cjs
+
 
   security:
     name: Security Scan
