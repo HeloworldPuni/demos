@@ -97,7 +97,7 @@ export default function CartelDashboard({ address }: CartelDashboardProps) {
     };
 
     return (
-        <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 max-w-[400px] mx-auto pb-32 relative overflow-hidden">
+        <div className="min-h-screen bg-[#0B0E12] text-white p-4 space-y-6 w-full max-w-lg mx-auto pb-32 relative overflow-hidden">
             {/* Background Elements */}
             <div className="absolute top-0 left-0 w-full h-[600px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/15 via-[#0B0E12]/40 to-[#0B0E12] pointer-events-none blur-3xl opacity-80" />
             <div className="absolute top-[-40px] right-[-40px] text-[10rem] opacity-[0.03] pointer-events-none rotate-12 blur-sm">🎩</div>
